@@ -6,7 +6,7 @@ import { reportAPI } from '../utils/api';
 import axios from 'axios';
 import { ArrowLeft, MapPin, Calendar, User, Sparkles, AlertCircle, MessageCircle, Star, X } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
 
 const ReportDetail = () => {
   const { id } = useParams();
@@ -198,7 +198,7 @@ const ReportDetail = () => {
           </div>
 
           {/* Review Alert - Show when report is resolved and user can review */}
-          {canReview && report.status === 'resolved' && (
+          {report.status === 'resolved' && canReview && !existingReview && (
             <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6 mb-6">
               <div className="flex items-start">
                 <div className="flex-shrink-0">

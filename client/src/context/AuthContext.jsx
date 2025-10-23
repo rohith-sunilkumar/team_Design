@@ -21,13 +21,19 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
 
-    if (token && savedUser) {
+    if (token) {
       try {
-        setUser(JSON.parse(savedUser));
+        // Validate token with backend and get fresh user data
+        const response = await authAPI.getMe();
+        const userData = response.data.data.user;
+        
+        // Update localStorage with fresh user data
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
       } catch (error) {
         console.error('Auth check failed:', error);
+        // Token is invalid or user not found - clear auth
         logout();
       }
     }

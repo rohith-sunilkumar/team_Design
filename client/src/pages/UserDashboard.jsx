@@ -220,93 +220,135 @@ const UserDashboard = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredReports.map((report) => (
-              <div key={report._id} className="card hover:scale-[1.02] transition-all duration-200 overflow-hidden border-t-4 ${report.status === 'open' ? 'border-blue-500' : report.status === 'in-progress' ? 'border-yellow-500' : report.status === 'resolved' ? 'border-green-500' : 'border-gray-500'}">
+              <div 
+                key={report._id} 
+                className="group relative card hover:scale-[1.03] hover:shadow-2xl transition-all duration-300 overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(30, 30, 50, 0.95) 0%, rgba(20, 20, 40, 0.98) 100%)'
+                }}
+              >
+                {/* Gradient Border Top */}
+                <div className={`absolute top-0 left-0 right-0 h-1 ${
+                  report.status === 'open' ? 'bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600' : 
+                  report.status === 'in-progress' ? 'bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500' : 
+                  report.status === 'resolved' ? 'bg-gradient-to-r from-green-400 via-green-500 to-emerald-500' : 
+                  'bg-gradient-to-r from-gray-400 via-gray-500 to-gray-600'
+                }`}></div>
+
+                {/* Glow Effect on Hover */}
+                <div className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl ${
+                  report.status === 'open' ? 'bg-blue-500' : 
+                  report.status === 'in-progress' ? 'bg-yellow-500' : 
+                  report.status === 'resolved' ? 'bg-green-500' : 
+                  'bg-gray-500'
+                }`}></div>
                 
-                <div className="p-6">
-                  {/* Category and Status */}
+                <div className="relative p-6">
+                  {/* Header: Category Icon, Name & Status Icon */}
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-3xl">{getCategoryIcon(report.category)}</span>
-                      <span className="text-sm font-medium text-gray-600 capitalize">
-                        {report.category}
+                    <div className="flex items-center space-x-3">
+                      <div className="text-4xl transform group-hover:scale-110 transition-transform duration-300">
+                        {getCategoryIcon(report.category)}
+                      </div>
+                      <span className="text-sm font-semibold text-gray-300 capitalize tracking-wide">
+                        {report.category.replace('_', ' ')}
                       </span>
                     </div>
-                    {getStatusIcon(report.status)}
+                    <div className="transform group-hover:scale-110 transition-transform duration-300">
+                      {getStatusIcon(report.status)}
+                    </div>
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-lg font-bold text-gray-100 mb-2 line-clamp-2 min-h-[3.5rem]">
+                  <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 min-h-[3.5rem] group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
                     {report.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3 min-h-[4.5rem]">
+                  <p className="text-gray-400 text-sm mb-4 line-clamp-3 min-h-[4.5rem] leading-relaxed">
                     {report.description}
                   </p>
 
-                  {/* Image Preview */}
+                  {/* Image Preview with Enhanced Styling */}
                   {report.images && report.images.length > 0 && (
-                    <div className="mb-4 relative">
+                    <div className="mb-4 relative group/image overflow-hidden rounded-xl">
                       <img
                         src={report.images[0].url}
                         alt="Report"
-                        className="w-full h-48 object-cover rounded-lg"
+                        className="w-full h-48 object-cover shadow-lg transform group-hover/image:scale-105 transition-transform duration-300"
                       />
                       {report.images.length > 1 && (
-                        <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                        <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm">
                           +{report.images.length - 1} more
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Status Badge */}
+                  {/* Status Badge with Gradient */}
                   <div className="mb-4">
-                    <span className={`px-3 py-1.5 rounded-full text-xs font-bold border ${getStatusColor(report.status)}`}>
+                    <span className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-bold shadow-md ${
+                      report.status === 'open' ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' : 
+                      report.status === 'in-progress' ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white' : 
+                      report.status === 'resolved' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' : 
+                      'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
+                    }`}>
                       {report.status.replace('-', ' ').toUpperCase()}
                     </span>
                   </div>
 
-                  {/* Meta Information */}
-                  <div className="space-y-2 mb-4 text-sm">
-                    <div className="flex items-center justify-between text-gray-500">
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        <span>{new Date(report.createdAt).toLocaleDateString()}</span>
+                  {/* Meta Information with Icons */}
+                  <div className="space-y-3 mb-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-gray-400 text-sm">
+                        <div className="bg-gray-800/50 p-2 rounded-lg mr-2">
+                          <Calendar className="h-4 w-4" />
+                        </div>
+                        <span>{new Date(report.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                       </div>
-                      <span className={`font-bold capitalize px-2 py-1 rounded ${getPriorityColor(report.priority)}`}>
+                      <span className={`font-bold capitalize px-3 py-1.5 rounded-lg text-xs shadow-sm ${
+                        report.priority === 'high' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                        report.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                        'bg-green-500/20 text-green-400 border border-green-500/30'
+                      }`}>
                         {report.priority}
                       </span>
                     </div>
                     
                     {report.location?.address && (
-                      <div className="flex items-start text-gray-500">
-                        <MapPin className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" />
-                        <span className="line-clamp-1">{report.location.address}</span>
+                      <div className="flex items-start text-gray-400 text-sm">
+                        <div className="bg-gray-800/50 p-2 rounded-lg mr-2 flex-shrink-0">
+                          <MapPin className="h-4 w-4" />
+                        </div>
+                        <span className="line-clamp-1 pt-1">{report.location.address}</span>
                       </div>
                     )}
 
                     {report.assignedDepartment && (
-                      <div className="text-gray-500">
-                        <span className="font-medium">Department:</span> {report.assignedDepartment}
+                      <div className="flex items-center text-gray-400 text-sm bg-gray-800/30 rounded-lg p-2.5 border border-gray-700/50">
+                        <span className="font-semibold text-purple-400 mr-2">📋 Department:</span>
+                        <span className="text-gray-300 capitalize">{report.assignedDepartment.replace('_', ' ')}</span>
                       </div>
                     )}
                   </div>
 
-                  {/* Admin Notes Preview */}
+                  {/* Admin Notes with Enhanced Styling */}
                   {report.adminNotes && (
-                    <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-yellow-800 mb-1">Admin Note:</p>
-                      <p className="text-sm text-yellow-900 line-clamp-2">{report.adminNotes}</p>
+                    <div className="mb-5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-4 backdrop-blur-sm">
+                      <div className="flex items-center mb-2">
+                        <AlertCircle className="h-4 w-4 text-amber-400 mr-2" />
+                        <p className="text-xs font-bold text-amber-400 uppercase tracking-wide">Admin Note</p>
+                      </div>
+                      <p className="text-sm text-amber-100 line-clamp-2 leading-relaxed">{report.adminNotes}</p>
                     </div>
                   )}
 
-                  {/* View Details Button */}
+                  {/* View Details Button with Gradient */}
                   <Link
                     to={`/reports/${report._id}`}
-                    className="btn-primary w-full flex items-center justify-center space-x-2"
+                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 group/button"
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-5 w-5 group-hover/button:scale-110 transition-transform" />
                     <span>View Full Details</span>
                   </Link>
                 </div>

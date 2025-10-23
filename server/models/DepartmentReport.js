@@ -38,8 +38,7 @@ const reportSchema = new mongoose.Schema({
       default: 'Point'
     },
     coordinates: {
-      type: [Number],
-      index: '2dsphere'
+      type: [Number]
     },
     address: String
   },

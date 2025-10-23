@@ -158,7 +158,7 @@ const MyReports = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center space-x-2">
                     <span className="text-2xl">{getCategoryIcon(report.category)}</span>
-                    <span className="text-sm font-medium text-gray-600 capitalize">
+                    <span className="text-sm font-medium text-gray-200 capitalize">
                       {report.category}
                     </span>
                   </div>
@@ -167,11 +167,11 @@ const MyReports = () => {
                   </span>
                 </div>
 
-                <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
                   {report.title}
                 </h3>
 
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                <p className="text-gray-300 text-sm mb-4 line-clamp-3">
                   {report.description}
                 </p>
 

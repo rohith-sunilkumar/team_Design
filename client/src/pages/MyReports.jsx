@@ -5,7 +5,7 @@ import { reportAPI } from '../utils/api';
 import axios from 'axios';
 import { FileText, Clock, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
 
 const MyReports = () => {
   const [reports, setReports] = useState([]);
@@ -38,7 +38,7 @@ const MyReports = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/department-reports/my-report/${reportId}`, {
+      await axios.delete(`${API_URL}/api/reports/${reportId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

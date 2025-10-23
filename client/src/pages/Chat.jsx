@@ -66,22 +66,31 @@ const Chat = () => {
   };
 
   const startNewChat = async () => {
-    if (!newChatDept) return;
+    if (!newChatDept) {
+      alert('Please select a department');
+      return;
+    }
 
     try {
       const headers = { Authorization: `Bearer ${token}` };
+      console.log('Starting chat with department:', newChatDept);
+      console.log('API URL:', `${API_URL}/api/chat/start`);
+      
       const response = await axios.post(
         `${API_URL}/api/chat/start`,
         { department: newChatDept },
         { headers }
       );
       
+      console.log('Chat started successfully:', response.data);
       setSelectedChat(response.data.data.chat);
       setShowNewChat(false);
       setNewChatDept('');
       fetchChats();
     } catch (error) {
       console.error('Error starting chat:', error);
+      console.error('Error response:', error.response?.data);
+      alert(`Failed to start chat: ${error.response?.data?.message || error.message}`);
     }
   };
 

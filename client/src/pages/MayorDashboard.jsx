@@ -8,7 +8,7 @@ import {
   Shield, AlertCircle, Trash2, UserCheck, FileText, Filter, Edit, Eye
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
 
 const MayorDashboard = () => {
   const { user, token, isAuthenticated } = useAuth();

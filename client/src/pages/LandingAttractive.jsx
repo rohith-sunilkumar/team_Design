@@ -436,7 +436,7 @@ const LandingAttractive = () => {
 
           <div className="border-t border-gray-800 pt-8 text-center">
             <p className="text-gray-400 text-sm">
-              &copy; 2024 Smart City Citizen Portal. All rights reserved. Empowering citizens, serving communities.
+              &copy; 2025 Smart City Citizen Portal. All rights reserved. Empowering citizens, serving communities.
             </p>
           </div>
         </div>

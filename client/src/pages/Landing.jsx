@@ -458,7 +458,7 @@ const LandingNew = () => {
 
           <div className="border-t border-cyan-400/30 pt-8 text-center">
             <p className="text-cyan-100 text-sm">
-              &copy; 2024 Smart City Citizen Portal. All rights reserved. Empowering citizens, serving communities.
+              &copy; 2025 Smart City Citizen Portal. All rights reserved. Empowering citizens, serving communities.
             </p>
           </div>
         </div>

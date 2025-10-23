@@ -246,8 +246,8 @@ const ReportDetail = () => {
 
           {/* Description */}
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-100 mb-2">Description</h3>
-            <p className="text-gray-300 whitespace-pre-wrap">{report.description}</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Description</h3>
+            <p className="text-white whitespace-pre-wrap">{report.description}</p>
           </div>
 
           {/* Images */}

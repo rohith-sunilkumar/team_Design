@@ -10,6 +10,8 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true
       }
-    }
+    },
+    // Handle client-side routing - serve index.html for all routes
+    historyApiFallback: true
   }
 })

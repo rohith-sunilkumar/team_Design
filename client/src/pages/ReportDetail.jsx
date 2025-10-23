@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import FeedbackChat from '../components/FeedbackChat';
-import { reportAPI } from '../utils/api';
+import { reportAPI, getImageUrl } from '../utils/api';
 import axios from 'axios';
 import { ArrowLeft, MapPin, Calendar, User, Sparkles, AlertCircle, MessageCircle, Star, X } from 'lucide-react';
 
@@ -37,7 +37,10 @@ const ReportDetail = () => {
     try {
       setLoading(true);
       const response = await reportAPI.getById(id);
-      setReport(response.data.data.report);
+      const reportData = response.data.data.report;
+      console.log('Report data:', reportData);
+      console.log('Images:', reportData.images);
+      setReport(reportData);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load report');
     } finally {
@@ -87,6 +90,25 @@ const ReportDetail = () => {
     } finally {
       setSubmittingReview(false);
     }
+  };
+
+  const formatDepartmentName = (department) => {
+    if (!department) return 'Not Assigned';
+    
+    const departmentMap = {
+      'road_service': 'Road Service Department',
+      'hospital_emergency': 'Hospital Emergency Department',
+      'water_management': 'Water Management Department',
+      'electrical_service': 'Electrical Service Department',
+      'general': 'General Department',
+      'Road Service Department': 'Road Service Department',
+      'Hospital Emergency Department': 'Hospital Emergency Department',
+      'Water Management Department': 'Water Management Department',
+      'Electrical Service Department': 'Electrical Service Department',
+      'General Department': 'General Department'
+    };
+    
+    return departmentMap[department] || department.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const getStatusColor = (status) => {
@@ -255,15 +277,24 @@ const ReportDetail = () => {
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-100 mb-3">Photos</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {report.images.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image.url}
-                    alt={`Report image ${index + 1}`}
-                    className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => window.open(image.url, '_blank')}
-                  />
-                ))}
+                {report.images.map((image, index) => {
+                  const imageUrl = getImageUrl(image.url);
+                  console.log(`Image ${index + 1} URL:`, imageUrl);
+                  return (
+                    <img
+                      key={index}
+                      src={imageUrl}
+                      alt={`Report image ${index + 1}`}
+                      className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => window.open(imageUrl, '_blank')}
+                      onError={(e) => {
+                        console.error(`Failed to load image ${index + 1}:`, imageUrl);
+                        e.target.style.border = '2px solid red';
+                        e.target.alt = `Failed to load image ${index + 1}`;
+                      }}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
@@ -296,8 +327,8 @@ const ReportDetail = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Department</p>
-                  <p className="font-semibold text-primary-600 capitalize">
-                    {report.assignedDepartment}
+                  <p className="font-semibold text-primary-600">
+                    {formatDepartmentName(report.assignedDepartment)}
                   </p>
                 </div>
               </div>

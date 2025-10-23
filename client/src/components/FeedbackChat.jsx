@@ -4,7 +4,7 @@ import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const FeedbackChat = ({ reportId, isOpen, onClose }) => {
   const [messages, setMessages] = useState([]);
@@ -27,12 +27,21 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
   const loadMessages = async () => {
     try {
       setLoading(true);
+      console.log('Loading feedback for report:', reportId);
+      console.log('API URL:', `${API_URL}/api/feedback/${reportId}`);
+      console.log('Token exists:', !!token);
+      
       const response = await axios.get(`${API_URL}/api/feedback/${reportId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setMessages(response.data.data.feedbacks);
+      
+      console.log('Feedback response:', response.data);
+      setMessages(response.data.data.feedbacks || []);
     } catch (error) {
       console.error('Error loading messages:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      setMessages([]);
     } finally {
       setLoading(false);
     }
@@ -52,11 +61,25 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
   useEffect(() => {
     if (!socket || !connected || !reportId) return;
 
+    console.log('Setting up socket listeners for report:', reportId);
+
     // Join report room
     socket.emit('join_report', reportId);
 
+    // Listen for successful join
+    socket.on('joined_report', (data) => {
+      console.log('Successfully joined report room:', data);
+    });
+
+    // Listen for socket errors
+    socket.on('error', (error) => {
+      console.error('Socket error:', error);
+      alert(error.message || 'Socket connection error');
+    });
+
     // Listen for new feedback
     socket.on('new_feedback', (data) => {
+      console.log('New feedback received:', data);
       if (data.reportId === reportId) {
         setMessages((prev) => [...prev, data.feedback]);
       }
@@ -80,6 +103,8 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
 
     return () => {
       socket.emit('leave_report', reportId);
+      socket.off('joined_report');
+      socket.off('error');
       socket.off('new_feedback');
       socket.off('user_typing');
       socket.off('user_stop_typing');
@@ -105,13 +130,18 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     
-    if (!newMessage.trim() && attachments.length === 0) return;
+    if (!newMessage.trim() && attachments.length === 0) {
+      console.log('No message or attachments to send');
+      return;
+    }
 
     try {
       setSending(true);
+      console.log('Sending message...', { reportId, hasSocket: !!socket, connected, hasAttachments: attachments.length > 0 });
 
       if (socket && connected && attachments.length === 0) {
         // Send via Socket.IO for real-time delivery (text only)
+        console.log('Sending via Socket.IO');
         socket.emit('send_feedback', {
           reportId,
           message: newMessage.trim(),
@@ -123,12 +153,14 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
         socket?.emit('stop_typing', { reportId });
       } else {
         // Use REST API for messages with attachments or when socket not connected
+        console.log('Sending via REST API');
         const formData = new FormData();
         formData.append('message', newMessage.trim());
         attachments.forEach(file => {
           formData.append('attachments', file);
         });
 
+        console.log('Posting to:', `${API_URL}/api/feedback/${reportId}`);
         const response = await axios.post(`${API_URL}/api/feedback/${reportId}`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -136,6 +168,7 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
           }
         });
 
+        console.log('Response:', response.data);
         if (response.data.success) {
           setNewMessage('');
           setAttachments([]);
@@ -147,6 +180,7 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
       }
     } catch (error) {
       console.error('Error sending message:', error);
+      console.error('Error details:', error.response?.data);
       const errorMsg = error.response?.data?.message || 'Failed to send message. Please try again.';
       alert(errorMsg);
     } finally {

@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { reportAPI } from '../utils/api';
-import axios from 'axios';
+import { reportAPI, getImageUrl } from '../utils/api';
 import { FileText, Clock, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
 
 const MyReports = () => {
   const [reports, setReports] = useState([]);
@@ -37,10 +34,7 @@ const MyReports = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/reports/${reportId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await reportAPI.delete(reportId);
 
       setSuccessMessage('Report deleted successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -158,7 +152,7 @@ const MyReports = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center space-x-2">
                     <span className="text-2xl">{getCategoryIcon(report.category)}</span>
-                    <span className="text-sm font-medium text-gray-200 capitalize">
+                    <span className="text-sm font-medium text-white capitalize">
                       {report.category}
                     </span>
                   </div>
@@ -167,25 +161,25 @@ const MyReports = () => {
                   </span>
                 </div>
 
-                <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
+                <h3 className="text-lg font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2 line-clamp-2">
                   {report.title}
                 </h3>
 
-                <p className="text-gray-300 text-sm mb-4 line-clamp-3">
+                <p className="text-gray-100 text-sm mb-4 line-clamp-3">
                   {report.description}
                 </p>
 
                 {report.images && report.images.length > 0 && (
                   <div className="mb-4">
                     <img
-                      src={report.images[0].url}
+                      src={getImageUrl(report.images[0].url)}
                       alt="Report"
                       className="w-full h-40 object-cover rounded-lg"
                     />
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-sm text-gray-300 mb-4">
+                <div className="flex items-center justify-between text-sm text-gray-100 mb-4">
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 mr-1" />
                     {new Date(report.createdAt).toLocaleDateString()}

@@ -82,6 +82,7 @@ router.post('/', protect, upload.array('images', 5), [
       images,
       location: parsedLocation,
       reporter: req.user._id,
+      assignedDepartment: department,
       ai_metadata: {
         suggestedCategory: aiResult.category,
         suggestedPriority: aiResult.priority,
@@ -489,20 +490,44 @@ router.delete('/my-report/:id', protect, async (req, res) => {
 
 // @route   DELETE /api/department-reports/:id
 // @desc    Delete report from department collection
-// @access  Private (Admin)
-router.delete('/:id', protect, authorize('admin'), async (req, res) => {
+// @access  Private (Citizens can delete their own, Admins can delete any in their dept)
+router.delete('/:id', protect, async (req, res) => {
   try {
-    const DepartmentModel = getDepartmentModel(req.user.department);
-    const report = await DepartmentModel.findById(req.params.id);
+    const allModels = getAllDepartmentModels();
+    let report = null;
+    let foundModel = null;
+
+    // Search all department collections for the report
+    for (const [dept, Model] of Object.entries(allModels)) {
+      const foundReport = await Model.findById(req.params.id);
+      if (foundReport) {
+        report = foundReport;
+        foundModel = Model;
+        break;
+      }
+    }
 
     if (!report) {
       return res.status(404).json({
         success: false,
-        message: 'Report not found in your department'
+        message: 'Report not found'
+      });
+    }
+
+    // Check authorization
+    const isOwner = report.reporter.toString() === req.user._id.toString();
+    const isAuthorizedAdmin = req.user.role === 'admin' && report.assignedDepartment === req.user.department;
+
+    if (!isOwner && !isAuthorizedAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to delete this report'
       });
     }
 
     await report.deleteOne();
+
+    console.log(`🗑️ Report ${req.params.id} deleted by ${req.user.name}`);
 
     res.json({
       success: true,

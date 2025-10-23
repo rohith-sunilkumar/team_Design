@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { reportAPI } from '../utils/api';
+import { reportAPI, getImageUrl } from '../utils/api';
 import {
   FileText,
   Clock,
@@ -273,7 +273,7 @@ const UserDashboard = () => {
                   {report.images && report.images.length > 0 && (
                     <div className="mb-4 relative group/image overflow-hidden rounded-xl">
                       <img
-                        src={report.images[0].url}
+                        src={getImageUrl(report.images[0].url)}
                         alt="Report"
                         className="w-full h-48 object-cover shadow-lg transform group-hover/image:scale-105 transition-transform duration-300"
                       />

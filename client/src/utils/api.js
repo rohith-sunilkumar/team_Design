@@ -5,11 +5,19 @@ const BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://t
 
 // Helper function to get full image URL
 export const getImageUrl = (imagePath) => {
-  if (!imagePath) return '';
+  if (!imagePath) {
+    console.warn('getImageUrl: No image path provided');
+    return '';
+  }
   // If it's already a full URL, return as is
-  if (imagePath.startsWith('http')) return imagePath;
+  if (imagePath.startsWith('http')) {
+    console.log('getImageUrl: Full URL detected:', imagePath);
+    return imagePath;
+  }
   // Otherwise, prepend the base URL
-  return `${BASE_URL}${imagePath}`;
+  const fullUrl = `${BASE_URL}${imagePath}`;
+  console.log('getImageUrl: Constructed URL:', fullUrl, 'from path:', imagePath);
+  return fullUrl;
 };
 
 const api = axios.create({

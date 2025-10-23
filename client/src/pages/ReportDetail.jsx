@@ -246,14 +246,14 @@ const ReportDetail = () => {
 
           {/* Description */}
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
-            <p className="text-gray-700 whitespace-pre-wrap">{report.description}</p>
+            <h3 className="text-lg font-semibold text-gray-100 mb-2">Description</h3>
+            <p className="text-gray-300 whitespace-pre-wrap">{report.description}</p>
           </div>
 
           {/* Images */}
           {report.images && report.images.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Photos</h3>
+              <h3 className="text-lg font-semibold text-gray-100 mb-3">Photos</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {report.images.map((image, index) => (
                   <img
@@ -273,7 +273,7 @@ const ReportDetail = () => {
             <div className="bg-primary-50 rounded-lg p-4 mb-6">
               <div className="flex items-center mb-3">
                 <Sparkles className="h-5 w-5 text-primary-600 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-900">AI Classification</h3>
+                <h3 className="text-lg font-semibold text-gray-100">AI Classification</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>

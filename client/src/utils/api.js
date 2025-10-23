@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://team-design.onrender.com/api';
+const BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://team-design.onrender.com';
 
 // Helper function to get full image URL
 export const getImageUrl = (imagePath) => {

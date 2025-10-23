@@ -185,7 +185,7 @@ const MyReports = () => {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                <div className="flex items-center justify-between text-sm text-gray-300 mb-4">
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 mr-1" />
                     {new Date(report.createdAt).toLocaleDateString()}

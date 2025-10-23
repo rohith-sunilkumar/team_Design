@@ -279,20 +279,28 @@ const ReportDetail = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {report.images.map((image, index) => {
                   const imageUrl = getImageUrl(image.url);
-                  console.log(`Image ${index + 1} URL:`, imageUrl);
+                  console.log(`Image ${index + 1}:`, { 
+                    original: image.url, 
+                    constructed: imageUrl 
+                  });
                   return (
-                    <img
-                      key={index}
-                      src={imageUrl}
-                      alt={`Report image ${index + 1}`}
-                      className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={() => window.open(imageUrl, '_blank')}
-                      onError={(e) => {
-                        console.error(`Failed to load image ${index + 1}:`, imageUrl);
-                        e.target.style.border = '2px solid red';
-                        e.target.alt = `Failed to load image ${index + 1}`;
-                      }}
-                    />
+                    <div key={index} className="relative">
+                      <img
+                        src={imageUrl}
+                        alt={`Report image ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => window.open(imageUrl, '_blank')}
+                        onError={(e) => {
+                          console.error(`Failed to load image ${index + 1}:`, {
+                            url: imageUrl,
+                            originalPath: image.url
+                          });
+                          // Replace with placeholder
+                          e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="14" dy="105" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EImage not found%3C/text%3E%3C/svg%3E';
+                          e.target.style.border = '2px solid #ef4444';
+                        }}
+                      />
+                    </div>
                   );
                 })}
               </div>

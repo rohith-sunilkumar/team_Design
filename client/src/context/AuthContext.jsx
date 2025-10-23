@@ -21,21 +21,39 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
+    
+    console.log('[AuthContext] Checking auth, token exists:', !!token);
 
     if (token) {
       try {
         // Validate token with backend and get fresh user data
+        console.log('[AuthContext] Validating token with backend...');
         const response = await authAPI.getMe();
         const userData = response.data.data.user;
+        
+        console.log('[AuthContext] User authenticated:', userData.name, userData.role);
         
         // Update localStorage with fresh user data
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('[AuthContext] Auth check failed:', error.response?.status, error.response?.data?.message);
+        
         // Token is invalid or user not found - clear auth
-        logout();
+        // Only logout if not already on login/register page to prevent loops
+        const currentPath = window.location.pathname;
+        if (!['/login', '/register'].includes(currentPath)) {
+          console.log('[AuthContext] Clearing invalid auth and redirecting to login');
+          logout();
+          window.location.href = '/login';
+        } else {
+          // Just clear storage without redirect
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       }
+    } else {
+      console.log('[AuthContext] No token found');
     }
     setLoading(false);
   };

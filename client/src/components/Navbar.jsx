@@ -1,18 +1,20 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User, LayoutDashboard, FileText, Users, Home, MessageCircle, Lock } from 'lucide-react';
+import { LogOut, User, LayoutDashboard, FileText, Users, Home, MessageCircle, Lock, Menu, X } from 'lucide-react';
 import logo from '../assets/logo.svg';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
     setShowProfileMenu(false);
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -20,13 +22,21 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <img src={logo} alt="Smart City Portal Logo" className="h-10 w-10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
-            <span className="text-xl font-bold gradient-text">Smart City Portal</span>
+          <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group">
+            <img src={logo} alt="Smart City Portal Logo" className="h-8 w-8 sm:h-10 sm:w-10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
+            <span className="text-lg sm:text-xl font-bold gradient-text">Smart City Portal</span>
           </Link>
 
-          {/* Navigation Links */}
-          <div className="flex items-center space-x-4">
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden text-gray-300 hover:text-violet-400 transition-colors p-2"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+
+          {/* Desktop Navigation Links */}
+          <div className="hidden lg:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
                 {isAdmin ? (
@@ -205,6 +215,127 @@ const Navbar = () => {
             )}
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-violet-500/20 animate-slide-down">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {isAuthenticated ? (
+                <>
+                  {/* User Info */}
+                  <div className="px-3 py-3 bg-gradient-to-r from-violet-600/20 to-purple-600/20 rounded-lg mb-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-gradient-to-br from-violet-600 to-purple-600 rounded-full p-2">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-100 text-sm">{user?.name}</p>
+                        <p className="text-xs text-gray-400">{user?.email}</p>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <span className="px-2 py-1 bg-violet-600/30 text-violet-300 text-xs font-semibold rounded-full border border-violet-500/30">
+                        {user?.role === 'admin' ? '👑 Admin' : user?.role === 'mayor' ? '🏛️ Mayor' : '👤 Citizen'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Navigation Links */}
+                  {isAdmin ? (
+                    <>
+                      <Link
+                        to="/admin/dashboard"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all"
+                      >
+                        <LayoutDashboard className="h-5 w-5" />
+                        <span>Analytics</span>
+                      </Link>
+                      <Link
+                        to="/admin/reports"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all"
+                      >
+                        <Users className="h-5 w-5" />
+                        <span>All Reports</span>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all"
+                      >
+                        <Home className="h-5 w-5" />
+                        <span>Dashboard</span>
+                      </Link>
+                      <Link
+                        to="/report"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-semibold"
+                      >
+                        <FileText className="h-5 w-5" />
+                        <span>Report Issue</span>
+                      </Link>
+                      <Link
+                        to="/my-reports"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all"
+                      >
+                        <FileText className="h-5 w-5" />
+                        <span>My Reports</span>
+                      </Link>
+                    </>
+                  )}
+                  
+                  <Link
+                    to="/chat"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                    <span>Chat</span>
+                  </Link>
+
+                  <Link
+                    to="/change-password"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all"
+                  >
+                    <Lock className="h-5 w-5" />
+                    <span>Change Password</span>
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-red-400 hover:bg-red-600/20 rounded-lg transition-all"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-semibold text-center"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

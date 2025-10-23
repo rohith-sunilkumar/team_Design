@@ -65,8 +65,8 @@ const AdminReports = () => {
       if (filters.category) params.category = filters.category;
       if (filters.priority) params.priority = filters.priority;
       
-      // Use getAllReports to fetch all reports across all departments
-      const response = await reportAPI.getAllReports(params);
+      // Fetch only reports for the admin's department
+      const response = await reportAPI.getAll(params);
       setReports(response.data.data.reports);
     } catch (error) {
       console.error('Error fetching reports:', error);

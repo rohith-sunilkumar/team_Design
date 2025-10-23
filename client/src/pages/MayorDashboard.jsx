@@ -647,11 +647,11 @@ const MayorDashboard = () => {
                     <select
                       value={editingReport.status}
                       onChange={(e) => setEditingReport({ ...editingReport, status: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
                     >
-                      <option value="open">Open</option>
-                      <option value="in-progress">In Progress</option>
-                      <option value="resolved">Resolved</option>
+                      <option value="open" className="text-gray-900">Open</option>
+                      <option value="in-progress" className="text-gray-900">In Progress</option>
+                      <option value="resolved" className="text-gray-900">Resolved</option>
                     </select>
                   </div>
 
@@ -661,12 +661,12 @@ const MayorDashboard = () => {
                     <select
                       value={editingReport.priority}
                       onChange={(e) => setEditingReport({ ...editingReport, priority: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
                     >
-                      <option value="low">Low</option>
-                      <option value="normal">Normal</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
+                      <option value="low" className="text-gray-900">Low</option>
+                      <option value="normal" className="text-gray-900">Normal</option>
+                      <option value="medium" className="text-gray-900">Medium</option>
+                      <option value="high" className="text-gray-900">High</option>
                     </select>
                   </div>
 

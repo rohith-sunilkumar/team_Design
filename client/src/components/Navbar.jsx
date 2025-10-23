@@ -152,25 +152,24 @@ const Navbar = () => {
                         )}
 
                         {user?.role === 'mayor' && (
-                          <Link
-                            to="/mayor/dashboard?tab=reports"
-                            onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all duration-300 group"
-                          >
-                            <FileText className="h-5 w-5 text-violet-400 group-hover:scale-110 transition-transform" />
-                            <span className="font-medium">User Reports</span>
-                          </Link>
-                        )}
-
-                        {isAdmin && (
-                          <Link
-                            to="/admin/reports"
-                            onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all duration-300 group"
-                          >
-                            <FileText className="h-5 w-5 text-violet-400 group-hover:scale-110 transition-transform" />
-                            <span className="font-medium">View All Reports</span>
-                          </Link>
+                          <>
+                            <Link
+                              to="/mayor/dashboard?tab=reports"
+                              onClick={() => setShowProfileMenu(false)}
+                              className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all duration-300 group"
+                            >
+                              <FileText className="h-5 w-5 text-violet-400 group-hover:scale-110 transition-transform" />
+                              <span className="font-medium">User Reports</span>
+                            </Link>
+                            <Link
+                              to="/admin/reports"
+                              onClick={() => setShowProfileMenu(false)}
+                              className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-violet-600/20 rounded-lg transition-all duration-300 group"
+                            >
+                              <FileText className="h-5 w-5 text-violet-400 group-hover:scale-110 transition-transform" />
+                              <span className="font-medium">View All Reports</span>
+                            </Link>
+                          </>
                         )}
 
                         <Link

@@ -647,7 +647,7 @@ const MayorDashboard = () => {
                     <select
                       value={editingReport.status}
                       onChange={(e) => setEditingReport({ ...editingReport, status: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
                     >
                       <option value="open">Open</option>
                       <option value="in-progress">In Progress</option>
@@ -661,7 +661,7 @@ const MayorDashboard = () => {
                     <select
                       value={editingReport.priority}
                       onChange={(e) => setEditingReport({ ...editingReport, priority: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
                     >
                       <option value="low">Low</option>
                       <option value="normal">Normal</option>
@@ -676,7 +676,7 @@ const MayorDashboard = () => {
                     <textarea
                       value={editingReport.adminNotes}
                       onChange={(e) => setEditingReport({ ...editingReport, adminNotes: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
                       rows="4"
                       placeholder="Add notes about this report..."
                     />

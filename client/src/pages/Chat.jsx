@@ -178,7 +178,7 @@ const Chat = () => {
           <h1 className="text-3xl font-bold gradient-text">
             {(user.role === 'admin' || user.role === 'mayor') ? 'Department Chats' : 'My Chats'}
           </h1>
-          {user.role !== 'admin' && (
+          {user.role === 'citizen' && (
             <button
               onClick={() => setShowNewChat(true)}
               className="btn-primary"

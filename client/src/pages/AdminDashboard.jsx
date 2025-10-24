@@ -186,7 +186,7 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Category Distribution */}
                   <div className="card">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Reports by Category</h3>
+                    <h3 className="text-lg font-semibold text-gray-100 mb-4">Reports by Category</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
                         <Pie
@@ -210,7 +210,7 @@ const AdminDashboard = () => {
 
                   {/* Status Distribution */}
                   <div className="card">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Reports by Status</h3>
+                    <h3 className="text-lg font-semibold text-gray-100 mb-4">Reports by Status</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={statusData}>
                         <CartesianGrid strokeDasharray="3 3" />

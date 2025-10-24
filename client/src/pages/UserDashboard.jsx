@@ -188,7 +188,7 @@ const UserDashboard = () => {
                   className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
                     filter === status
                       ? 'bg-primary-600 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-slate-700 text-gray-200 hover:bg-slate-600'
                   }`}
                 >
                   {status === 'all' ? 'All' : status.replace('-', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}

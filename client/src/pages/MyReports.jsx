@@ -135,8 +135,8 @@ const MyReports = () => {
         ) : reports.length === 0 ? (
           <div className="card text-center py-12">
             <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No reports found</h3>
-            <p className="text-gray-600 mb-6">
+            <h3 className="text-xl font-semibold text-gray-100 mb-2">No reports found</h3>
+            <p className="text-gray-300 mb-6">
               {filter === 'all' 
                 ? "You haven't submitted any reports yet."
                 : `No ${filter} reports found.`}

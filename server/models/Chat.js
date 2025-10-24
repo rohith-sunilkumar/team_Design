@@ -12,7 +12,7 @@ const messageSchema = new mongoose.Schema({
   },
   senderRole: {
     type: String,
-    enum: ['citizen', 'admin'],
+    enum: ['citizen', 'admin', 'mayor'],
     required: true
   },
   message: {
@@ -43,7 +43,7 @@ const chatSchema = new mongoose.Schema({
   },
   department: {
     type: String,
-    enum: ['road_service', 'hospital_emergency', 'water_management', 'electrical_service', 'general'],
+    enum: ['mayor_office', 'road_service', 'hospital_emergency', 'water_management', 'electrical_service', 'general'],
     required: true,
     index: true
   },

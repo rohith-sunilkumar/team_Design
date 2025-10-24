@@ -172,7 +172,7 @@ const ReportIssue = () => {
               </div>
             </div>
 
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm text-gray-400 mb-6">
               Report ID: <span className="font-mono font-semibold">{success.reportId}</span>
             </p>
 
@@ -234,7 +234,7 @@ const ReportIssue = () => {
                 placeholder="Describe the issue in detail..."
                 required
               />
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-400 mt-1">
                 💡 Our AI will analyze this description to categorize and prioritize your report
               </p>
             </div>
@@ -258,7 +258,7 @@ const ReportIssue = () => {
                 <option value="Electrical Service Department">Electrical Service Department</option>
                 <option value="General Department">General Department</option>
               </select>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-400 mt-1">
                 💡 If you know which department should handle this, select it. Otherwise, our AI will automatically assign it.
               </p>
             </div>
@@ -328,7 +328,7 @@ const ReportIssue = () => {
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <Upload className="h-8 w-8 text-gray-400 mb-2" />
                     <p className="text-sm text-gray-300">Click to upload images</p>
-                    <p className="text-xs text-gray-500">PNG, JPG up to 5MB</p>
+                    <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
                   </div>
                   <input
                     type="file"

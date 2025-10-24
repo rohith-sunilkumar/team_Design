@@ -340,13 +340,13 @@ const AdminReports = () => {
                       <div className="flex items-center space-x-3 mb-2">
                         <span className="text-3xl">{getCategoryIcon(report.category)}</span>
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{report.title}</h3>
+                          <h3 className="text-lg font-semibold text-gray-100">{report.title}</h3>
                           <div className="flex items-center space-x-4 mt-1">
-                            <span className="text-sm text-gray-500 flex items-center">
+                            <span className="text-sm text-gray-300 flex items-center">
                               <User className="h-4 w-4 mr-1" />
                               {report.reporter?.name || 'Unknown'}
                             </span>
-                            <span className="text-sm text-gray-500 flex items-center">
+                            <span className="text-sm text-gray-300 flex items-center">
                               <Calendar className="h-4 w-4 mr-1" />
                               {new Date(report.createdAt).toLocaleDateString()}
                             </span>
@@ -358,7 +358,7 @@ const AdminReports = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => setExpandedReport(expandedReport === report._id ? null : report._id)}
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-gray-400 hover:text-gray-200"
                       >
                         {expandedReport === report._id ? (
                           <ChevronUp className="h-5 w-5" />
@@ -566,7 +566,7 @@ const AdminReports = () => {
                               </a>
                             ))}
                           </div>
-                          <p className="text-xs text-gray-500 mt-2">Click on any image to view full size</p>
+                          <p className="text-xs text-gray-400 mt-2">Click on any image to view full size</p>
                         </div>
                       )}
                     </div>
@@ -576,13 +576,13 @@ const AdminReports = () => {
                 {/* Edit Form */}
                 {editingReport === report._id && (
                   <div className="border-t border-gray-200 bg-blue-50 p-6">
-                    <h4 className="font-semibold text-gray-100 mb-4 flex items-center">
+                    <h4 className="font-semibold text-gray-800 mb-4 flex items-center">
                       <Edit className="h-5 w-5 mr-2" />
                       Update Report Details
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                         <select
                           value={editForm.status}
                           onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
@@ -596,7 +596,7 @@ const AdminReports = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Priority</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
                         <select
                           value={editForm.priority}
                           onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
@@ -609,7 +609,7 @@ const AdminReports = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Category</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                         <select
                           value={editForm.category}
                           onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
@@ -625,7 +625,7 @@ const AdminReports = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Assigned Department</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Department</label>
                         <select
                           value={editForm.assignedDepartment}
                           onChange={(e) => setEditForm({ ...editForm, assignedDepartment: e.target.value })}
@@ -641,7 +641,7 @@ const AdminReports = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Admin Notes</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Admin Notes</label>
                         <textarea
                           value={editForm.adminNotes}
                           onChange={(e) => setEditForm({ ...editForm, adminNotes: e.target.value })}
@@ -667,11 +667,11 @@ const AdminReports = () => {
               <Trash2 className="h-8 w-8 text-red-600" />
             </div>
             
-            <h3 className="text-2xl font-bold text-gray-900 text-center mb-2">
+            <h3 className="text-2xl font-bold text-gray-100 text-center mb-2">
               Delete Report?
             </h3>
             
-            <p className="text-gray-600 text-center mb-6">
+            <p className="text-gray-300 text-center mb-6">
               Are you sure you want to delete this report? This action cannot be undone.
             </p>
 
@@ -679,10 +679,10 @@ const AdminReports = () => {
               <p className="text-sm font-semibold text-gray-100 mb-1">
                 {deleteConfirm.title}
               </p>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-300">
                 Reported by: {deleteConfirm.reporter?.name}
               </p>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-300">
                 Category: {deleteConfirm.category}
               </p>
             </div>

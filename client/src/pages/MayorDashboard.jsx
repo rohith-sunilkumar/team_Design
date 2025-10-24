@@ -614,7 +614,7 @@ const MayorDashboard = () => {
                   <h3 className="text-2xl font-bold text-gray-800">Edit Report</h3>
                   <button
                     onClick={() => { setShowEditModal(false); setEditingReport(null); }}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-200"
                   >
                     <XCircle className="h-6 w-6" />
                   </button>

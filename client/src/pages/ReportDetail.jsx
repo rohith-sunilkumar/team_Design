@@ -160,8 +160,8 @@ const ReportDetail = () => {
         <div className="max-w-4xl mx-auto px-4 py-16">
           <div className="card text-center">
             <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Report Not Found</h2>
-            <p className="text-gray-600 mb-6">{error || 'The report you are looking for does not exist.'}</p>
+            <h2 className="text-2xl font-bold text-gray-100 mb-2">Report Not Found</h2>
+            <p className="text-gray-300 mb-6">{error || 'The report you are looking for does not exist.'}</p>
             <Link to="/my-reports" className="btn-primary inline-block">
               Back to My Reports
             </Link>
@@ -178,7 +178,7 @@ const ReportDetail = () => {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
+          className="flex items-center text-gray-300 hover:text-gray-100 mb-6"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           Back
@@ -190,8 +190,8 @@ const ReportDetail = () => {
             <div className="flex items-center space-x-3">
               <span className="text-4xl">{getCategoryIcon(report.category)}</span>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">{report.title}</h1>
-                <p className="text-gray-600 capitalize">Category: {report.category}</p>
+                <h1 className="text-3xl font-bold text-gray-100">{report.title}</h1>
+                <p className="text-gray-300 capitalize">Category: {report.category}</p>
               </div>
             </div>
             <span className={`px-4 py-2 rounded-lg text-sm font-semibold border ${getStatusColor(report.status)}`}>
@@ -204,17 +204,17 @@ const ReportDetail = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className={`w-3 h-3 rounded-full ${report.status === 'open' ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
-                <span className="text-sm font-medium">Open</span>
+                <span className="text-sm font-medium text-gray-200">Open</span>
               </div>
               <div className="flex-1 h-1 bg-gray-300 mx-2"></div>
               <div className="flex items-center space-x-2">
                 <div className={`w-3 h-3 rounded-full ${report.status === 'in-progress' ? 'bg-yellow-500' : report.status === 'resolved' || report.status === 'closed' ? 'bg-gray-300' : 'bg-gray-300'}`}></div>
-                <span className="text-sm font-medium">In Progress</span>
+                <span className="text-sm font-medium text-gray-200">In Progress</span>
               </div>
               <div className="flex-1 h-1 bg-gray-300 mx-2"></div>
               <div className="flex items-center space-x-2">
                 <div className={`w-3 h-3 rounded-full ${report.status === 'resolved' || report.status === 'closed' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                <span className="text-sm font-medium">Resolved</span>
+                <span className="text-sm font-medium text-gray-200">Resolved</span>
               </div>
             </div>
           </div>
@@ -312,7 +312,7 @@ const ReportDetail = () => {
             <div className="bg-primary-50 rounded-lg p-4 mb-6">
               <div className="flex items-center mb-3">
                 <Sparkles className="h-5 w-5 text-primary-600 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-100">AI Classification</h3>
+                <h3 className="text-lg font-semibold text-gray-800">AI Classification</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
@@ -352,12 +352,12 @@ const ReportDetail = () => {
           {report.location && report.location.address && (
             <div className="mb-6">
               <div className="flex items-center mb-2">
-                <MapPin className="h-5 w-5 text-gray-600 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-900">Location</h3>
+                <MapPin className="h-5 w-5 text-gray-300 mr-2" />
+                <h3 className="text-lg font-semibold text-gray-100">Location</h3>
               </div>
-              <p className="text-gray-700">{report.location.address}</p>
+              <p className="text-gray-200">{report.location.address}</p>
               {report.location.coordinates && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-400 mt-1">
                   Coordinates: {report.location.coordinates[1].toFixed(4)}, {report.location.coordinates[0].toFixed(4)}
                 </p>
               )}
@@ -368,7 +368,7 @@ const ReportDetail = () => {
           {report.adminNotes && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Admin Notes</h3>
-              <p className="text-gray-700">{report.adminNotes}</p>
+              <p className="text-gray-800">{report.adminNotes}</p>
             </div>
           )}
 
@@ -386,21 +386,21 @@ const ReportDetail = () => {
                 </span>
               )}
             </button>
-            <p className="text-sm text-gray-600 text-center mt-2">
+            <p className="text-sm text-gray-400 text-center mt-2">
               Communicate directly with the assigned department admin
             </p>
           </div>
 
           {/* Metadata */}
           <div className="border-t pt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="flex items-center text-gray-600">
+            <div className="flex items-center text-gray-300">
               <Calendar className="h-4 w-4 mr-2" />
               <div>
                 <p className="font-medium">Reported</p>
                 <p>{new Date(report.createdAt).toLocaleString()}</p>
               </div>
             </div>
-            <div className="flex items-center text-gray-600">
+            <div className="flex items-center text-gray-300">
               <User className="h-4 w-4 mr-2" />
               <div>
                 <p className="font-medium">Reporter</p>
@@ -408,7 +408,7 @@ const ReportDetail = () => {
               </div>
             </div>
             <div>
-              <p className="font-medium text-gray-600 mb-1">Priority</p>
+              <p className="font-medium text-gray-300 mb-1">Priority</p>
               <span className={`px-3 py-1 rounded-lg text-xs font-semibold border ${getPriorityColor(report.priority)}`}>
                 {report.priority.toUpperCase()}
               </span>
@@ -433,7 +433,7 @@ const ReportDetail = () => {
                 <h3 className="text-2xl font-bold gradient-text">Share Your Experience</h3>
                 <button
                   onClick={() => setShowReviewModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-200"
                 >
                   <X className="h-6 w-6" />
                 </button>

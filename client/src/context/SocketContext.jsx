@@ -29,13 +29,18 @@ export const SocketProvider = ({ children }) => {
     }
 
     // Initialize socket connection
-    const newSocket = io(import.meta.env.VITE_API_URL || 'https://team-design.onrender.com', {
+    const socketUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://team-design.onrender.com';
+    console.log('🔌 Connecting to Socket.IO server:', socketUrl);
+    
+    const newSocket = io(socketUrl, {
       auth: {
         token
       },
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 5
+      reconnectionAttempts: 5,
+      transports: ['websocket', 'polling'], // Try websocket first, fallback to polling
+      withCredentials: true
     });
 
     newSocket.on('connect', () => {

@@ -139,44 +139,30 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
       setSending(true);
       console.log('Sending message...', { reportId, hasSocket: !!socket, connected, hasAttachments: attachments.length > 0 });
 
-      if (socket && connected && attachments.length === 0) {
-        // Send via Socket.IO for real-time delivery (text only)
-        console.log('Sending via Socket.IO');
-        socket.emit('send_feedback', {
-          reportId,
-          message: newMessage.trim(),
-          attachments: []
-        });
-        
+      // Always use REST API for reliability (Socket.IO for real-time updates only)
+      console.log('Sending via REST API (Socket connected:', connected, ')');
+      const formData = new FormData();
+      formData.append('message', newMessage.trim());
+      attachments.forEach(file => {
+        formData.append('attachments', file);
+      });
+
+      console.log('Posting to:', `${API_URL}/api/feedback/${reportId}`);
+      const response = await axios.post(`${API_URL}/api/feedback/${reportId}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      console.log('Response:', response.data);
+      if (response.data.success) {
         setNewMessage('');
         setAttachments([]);
         socket?.emit('stop_typing', { reportId });
-      } else {
-        // Use REST API for messages with attachments or when socket not connected
-        console.log('Sending via REST API');
-        const formData = new FormData();
-        formData.append('message', newMessage.trim());
-        attachments.forEach(file => {
-          formData.append('attachments', file);
-        });
-
-        console.log('Posting to:', `${API_URL}/api/feedback/${reportId}`);
-        const response = await axios.post(`${API_URL}/api/feedback/${reportId}`, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-
-        console.log('Response:', response.data);
-        if (response.data.success) {
-          setNewMessage('');
-          setAttachments([]);
-          socket?.emit('stop_typing', { reportId });
-          
-          // Reload messages to show the new one
-          await loadMessages();
-        }
+        
+        // Reload messages to show the new one
+        await loadMessages();
       }
     } catch (error) {
       console.error('Error sending message:', error);

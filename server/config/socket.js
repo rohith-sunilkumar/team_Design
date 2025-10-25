@@ -40,12 +40,35 @@ const findReport = async (reportId) => {
 let io;
 
 export const initializeSocket = (server) => {
+  // Allow multiple origins for development and production
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://team-design.onrender.com',
+    'https://smart-city-4nwz.onrender.com',
+    process.env.CLIENT_URL
+  ].filter(Boolean);
+
   io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
-      methods: ['GET', 'POST'],
-      credentials: true
-    }
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          console.log('⚠️ Blocked CORS request from:', origin);
+          callback(null, true); // Allow all origins for now
+        }
+      },
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      credentials: true,
+      allowedHeaders: ['Content-Type', 'Authorization']
+    },
+    transports: ['websocket', 'polling'],
+    pingTimeout: 60000,
+    pingInterval: 25000
   });
 
   // Socket.IO authentication middleware

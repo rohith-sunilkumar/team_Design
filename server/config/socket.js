@@ -98,8 +98,9 @@ export const initializeSocket = (server) => {
         }
         
         const isAuthorizedAdmin = socket.user.role === 'admin' && reportDepartment === socket.user.department;
+        const isMayor = socket.user.role === 'mayor'; // Mayor has access to all reports
 
-        if (!isReporter && !isAuthorizedAdmin) {
+        if (!isReporter && !isAuthorizedAdmin && !isMayor) {
           socket.emit('error', { message: 'Not authorized to access this report' });
           return;
         }
@@ -145,8 +146,9 @@ export const initializeSocket = (server) => {
         }
         
         const isAuthorizedAdmin = socket.user.role === 'admin' && reportDepartment === socket.user.department;
+        const isMayor = socket.user.role === 'mayor'; // Mayor has access to all reports
 
-        if (!isReporter && !isAuthorizedAdmin) {
+        if (!isReporter && !isAuthorizedAdmin && !isMayor) {
           socket.emit('error', { message: 'Not authorized to send feedback on this report' });
           return;
         }
@@ -220,8 +222,9 @@ export const initializeSocket = (server) => {
         }
         
         const isAuthorizedAdmin = socket.user.role === 'admin' && reportDepartment === socket.user.department;
+        const isMayor = socket.user.role === 'mayor'; // Mayor has access to all reports
 
-        if (!isReporter && !isAuthorizedAdmin) {
+        if (!isReporter && !isAuthorizedAdmin && !isMayor) {
           return;
         }
 

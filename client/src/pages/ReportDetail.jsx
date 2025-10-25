@@ -74,18 +74,29 @@ const ReportDetail = () => {
       setSubmittingReview(true);
       const token = localStorage.getItem('token');
 
-      await axios.post(
+      console.log('📝 Submitting review:', {
+        reportId: id,
+        rating: reviewData.rating,
+        experience: reviewData.experience,
+        isPublic: reviewData.isPublic,
+        wouldRecommend: reviewData.wouldRecommend
+      });
+
+      const response = await axios.post(
         `${API_URL}/api/reviews/${id}`,
         reviewData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      console.log('✅ Review submitted successfully:', response.data);
 
       setShowReviewModal(false);
       setCanReview(false);
       alert('Thank you for your review! Your feedback helps us improve our services.');
       checkCanReview();
     } catch (error) {
-      console.error('Error submitting review:', error);
+      console.error('❌ Error submitting review:', error);
+      console.error('Error response:', error.response?.data);
       alert(error.response?.data?.message || 'Failed to submit review');
     } finally {
       setSubmittingReview(false);
@@ -190,8 +201,8 @@ const ReportDetail = () => {
             <div className="flex items-center space-x-3">
               <span className="text-4xl">{getCategoryIcon(report.category)}</span>
               <div>
-                <h1 className="text-3xl font-bold text-gray-100">{report.title}</h1>
-                <p className="text-gray-300 capitalize">Category: {report.category}</p>
+                <h1 className="text-3xl font-bold text-white">{report.title}</h1>
+                <p className="text-gray-200 capitalize">Category: {report.category}</p>
               </div>
             </div>
             <span className={`px-4 py-2 rounded-lg text-sm font-semibold border ${getStatusColor(report.status)}`}>
@@ -267,9 +278,9 @@ const ReportDetail = () => {
           )}
 
           {/* Description */}
-          <div className="mb-6">
+          <div className="mb-6 bg-slate-700/50 p-4 rounded-lg">
             <h3 className="text-lg font-semibold text-white mb-2">Description</h3>
-            <p className="text-white whitespace-pre-wrap">{report.description}</p>
+            <p className="text-gray-100 whitespace-pre-wrap leading-relaxed">{report.description}</p>
           </div>
 
           {/* Images */}
@@ -309,39 +320,39 @@ const ReportDetail = () => {
 
           {/* AI Classification */}
           {report.ai_metadata && (
-            <div className="bg-primary-50 rounded-lg p-4 mb-6">
+            <div className="bg-purple-900/30 border border-purple-600/50 rounded-lg p-4 mb-6">
               <div className="flex items-center mb-3">
-                <Sparkles className="h-5 w-5 text-primary-600 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-800">AI Classification</h3>
+                <Sparkles className="h-5 w-5 text-purple-400 mr-2" />
+                <h3 className="text-lg font-semibold text-white">AI Classification</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Suggested Category</p>
-                  <p className="font-semibold text-primary-600 capitalize">
+                  <p className="text-sm text-gray-400 mb-1">Suggested Category</p>
+                  <p className="font-semibold text-purple-300 capitalize">
                     {report.ai_metadata.suggestedCategory}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Suggested Priority</p>
-                  <p className="font-semibold text-primary-600 capitalize">
+                  <p className="text-sm text-gray-400 mb-1">Suggested Priority</p>
+                  <p className="font-semibold text-purple-300 capitalize">
                     {report.ai_metadata.suggestedPriority}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Confidence</p>
-                  <p className="font-semibold text-primary-600">
+                  <p className="text-sm text-gray-400 mb-1">Confidence</p>
+                  <p className="font-semibold text-purple-300">
                     {(report.ai_metadata.confidence * 100).toFixed(0)}%
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Department</p>
-                  <p className="font-semibold text-primary-600">
+                  <p className="text-sm text-gray-400 mb-1">Department</p>
+                  <p className="font-semibold text-purple-300">
                     {formatDepartmentName(report.assignedDepartment)}
                   </p>
                 </div>
               </div>
               {report.ai_metadata.reasoning && (
-                <p className="text-sm text-gray-700 mt-3">
+                <p className="text-sm text-gray-200 mt-3">
                   <strong>Reasoning:</strong> {report.ai_metadata.reasoning}
                 </p>
               )}
@@ -350,14 +361,14 @@ const ReportDetail = () => {
 
           {/* Location */}
           {report.location && report.location.address && (
-            <div className="mb-6">
+            <div className="mb-6 bg-slate-700/50 p-4 rounded-lg">
               <div className="flex items-center mb-2">
-                <MapPin className="h-5 w-5 text-gray-300 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-100">Location</h3>
+                <MapPin className="h-5 w-5 text-blue-400 mr-2" />
+                <h3 className="text-lg font-semibold text-white">Location</h3>
               </div>
-              <p className="text-gray-200">{report.location.address}</p>
+              <p className="text-gray-100">{report.location.address}</p>
               {report.location.coordinates && (
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-sm text-gray-300 mt-1">
                   Coordinates: {report.location.coordinates[1].toFixed(4)}, {report.location.coordinates[0].toFixed(4)}
                 </p>
               )}
@@ -366,9 +377,9 @@ const ReportDetail = () => {
 
           {/* Admin Notes */}
           {report.adminNotes && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Admin Notes</h3>
-              <p className="text-gray-800">{report.adminNotes}</p>
+            <div className="bg-yellow-900/30 border border-yellow-600/50 rounded-lg p-4 mb-6">
+              <h3 className="text-lg font-semibold text-yellow-300 mb-2">Admin Notes</h3>
+              <p className="text-gray-100">{report.adminNotes}</p>
             </div>
           )}
 
@@ -442,7 +453,7 @@ const ReportDetail = () => {
               <form onSubmit={handleSubmitReview} className="space-y-6">
                 {/* Rating */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-white mb-2">
                     Overall Rating *
                   </label>
                   <div className="flex items-center space-x-2">
@@ -462,7 +473,7 @@ const ReportDetail = () => {
                         />
                       </button>
                     ))}
-                    <span className="ml-4 text-lg font-semibold text-gray-700">
+                    <span className="ml-4 text-lg font-semibold text-white">
                       {reviewData.rating} / 5
                     </span>
                   </div>
@@ -470,16 +481,16 @@ const ReportDetail = () => {
 
                 {/* Experience */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-white mb-2">
                     Your Experience *
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     {['excellent', 'good', 'average', 'poor'].map((exp) => (
                       <button
                         key={exp}
                         type="button"
                         onClick={() => setReviewData({ ...reviewData, experience: exp })}
-                        className={`px-4 py-3 rounded-lg font-medium transition-colors ${
+                        className={`px-6 py-3 rounded-lg font-semibold transition-colors text-center ${
                           reviewData.experience === exp
                             ? 'bg-primary-600 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -493,13 +504,13 @@ const ReportDetail = () => {
 
                 {/* Comment */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-white mb-2">
                     Your Feedback *
                   </label>
                   <textarea
                     value={reviewData.comment}
                     onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 placeholder-gray-500"
                     rows="4"
                     placeholder="Tell us about your experience with our service..."
                     required
@@ -508,14 +519,14 @@ const ReportDetail = () => {
 
                 {/* Resolution Time */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-white mb-2">
                     How long did it take to resolve? (Optional)
                   </label>
                   <input
                     type="text"
                     value={reviewData.resolutionTime}
                     onChange={(e) => setReviewData({ ...reviewData, resolutionTime: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 placeholder-gray-500"
                     placeholder="e.g., 2 days, 1 week"
                   />
                 </div>
@@ -529,7 +540,7 @@ const ReportDetail = () => {
                     onChange={(e) => setReviewData({ ...reviewData, wouldRecommend: e.target.checked })}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="wouldRecommend" className="ml-2 text-sm text-gray-700">
+                  <label htmlFor="wouldRecommend" className="ml-2 text-sm text-gray-200 font-medium">
                     I would recommend this service to others
                   </label>
                 </div>
@@ -543,7 +554,7 @@ const ReportDetail = () => {
                     onChange={(e) => setReviewData({ ...reviewData, isPublic: e.target.checked })}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="isPublic" className="ml-2 text-sm text-gray-700">
+                  <label htmlFor="isPublic" className="ml-2 text-sm text-gray-200 font-medium">
                     Make my review public (help other citizens)
                   </label>
                 </div>

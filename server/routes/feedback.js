@@ -85,10 +85,11 @@ router.get('/:reportId', protect, async (req, res) => {
     }
     
     const isAuthorizedAdmin = req.user.role === 'admin' && reportDepartment === req.user.department;
+    const isMayor = req.user.role === 'mayor'; // Mayor has access to all feedback
     
-    console.log(`🔐 Authorization check: isReporter=${isReporter}, isAdmin=${req.user.role === 'admin'}, reportDept=${reportDepartment}, userDept=${req.user.department}`);
+    console.log(`🔐 Authorization check: isReporter=${isReporter}, isAdmin=${req.user.role === 'admin'}, isMayor=${isMayor}, reportDept=${reportDepartment}, userDept=${req.user.department}`);
 
-    if (!isReporter && !isAuthorizedAdmin) {
+    if (!isReporter && !isAuthorizedAdmin && !isMayor) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to view feedback for this report'
@@ -177,8 +178,9 @@ router.post('/:reportId', protect, upload.array('attachments', 3), [
     }
     
     const isAuthorizedAdmin = req.user.role === 'admin' && reportDepartment === req.user.department;
+    const isMayor = req.user.role === 'mayor'; // Mayor has access to all feedback
 
-    if (!isReporter && !isAuthorizedAdmin) {
+    if (!isReporter && !isAuthorizedAdmin && !isMayor) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to send feedback on this report'
@@ -258,8 +260,9 @@ router.get('/:reportId/unread-count', protect, async (req, res) => {
     const isReporter = report.reporter.toString() === req.user._id.toString();
     const isAuthorizedAdmin = req.user.role === 'admin' && 
                               report.assignedDepartment === req.user.department;
+    const isMayor = req.user.role === 'mayor'; // Mayor has access to all feedback
 
-    if (!isReporter && !isAuthorizedAdmin) {
+    if (!isReporter && !isAuthorizedAdmin && !isMayor) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to view feedback for this report'

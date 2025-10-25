@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Star, ThumbsUp, Clock, Award } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
 
 const ReviewsSection = () => {
   const [reviews, setReviews] = useState([]);
@@ -11,20 +11,52 @@ const ReviewsSection = () => {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
+    console.log('🎬 ReviewsSection component mounted');
     fetchReviews();
   }, [filter]);
+
+  useEffect(() => {
+    console.log('📊 Reviews state updated:', reviews.length, 'reviews');
+  }, [reviews]);
 
   const fetchReviews = async () => {
     try {
       setLoading(true);
       const params = filter !== 'all' ? { rating: filter } : {};
-      const response = await axios.get(`${API_URL}/api/reviews/public`, { params });
-      setReviews(response.data.data.reviews);
-      setStats(response.data.data.stats);
+      const url = `${API_URL}/api/reviews/public`;
+      
+      console.log('🔍 Fetching reviews from:', url);
+      console.log('📊 API_URL:', API_URL);
+      console.log('🎯 Filter params:', params);
+      
+      const response = await axios.get(url, { params });
+      
+      console.log('✅ Reviews response received:', response.data);
+      console.log('📝 Reviews array:', response.data.data?.reviews);
+      console.log('📊 Stats:', response.data.data?.stats);
+      
+      const reviewsData = response.data.data?.reviews || [];
+      const statsData = response.data.data?.stats || null;
+      
+      setReviews(reviewsData);
+      setStats(statsData);
+      
+      console.log(`✅ Successfully loaded ${reviewsData.length} reviews`);
+      
+      if (reviewsData.length === 0) {
+        console.warn('⚠️ No reviews found in response');
+      }
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      console.error('❌ Error fetching reviews:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error response:', error.response?.data);
+      console.error('❌ Error status:', error.response?.status);
+      console.error('❌ Full error:', error);
+      setReviews([]);
+      setStats(null);
     } finally {
       setLoading(false);
+      console.log('🏁 Fetch reviews completed');
     }
   };
 
@@ -144,7 +176,11 @@ const ReviewsSection = () => {
         {/* Reviews Grid */}
         {reviews.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">No reviews yet. Be the first to share your experience!</p>
+            <div className="card max-w-md mx-auto">
+              <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-300 text-lg font-semibold mb-2">No reviews yet</p>
+              <p className="text-gray-400">Be the first to share your experience!</p>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

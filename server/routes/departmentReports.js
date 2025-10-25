@@ -333,6 +333,23 @@ router.get('/:id', protect, async (req, res) => {
       const DepartmentModel = getDepartmentModel(req.user.department);
       report = await DepartmentModel.findById(req.params.id).populate('reporter', 'name email phone');
       foundCollection = DepartmentModel.collection.name;
+    } else if (req.user.role === 'mayor') {
+      // Mayor: Search across all departments (full access)
+      const allModels = getAllDepartmentModels();
+      
+      for (const [dept, Model] of Object.entries(allModels)) {
+        try {
+          const foundReport = await Model.findById(req.params.id).populate('reporter', 'name email phone');
+          if (foundReport) {
+            report = foundReport;
+            foundCollection = Model.collection.name;
+            break;
+          }
+        } catch (err) {
+          // Continue searching in other collections
+          continue;
+        }
+      }
     } else {
       // Citizen: Search across all departments
       const allModels = getAllDepartmentModels();
@@ -360,6 +377,7 @@ router.get('/:id', protect, async (req, res) => {
     }
 
     // Citizens can only view their own reports
+    // Mayor and Admin can view all reports
     if (req.user.role === 'citizen' && report.reporter._id.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,

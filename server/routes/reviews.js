@@ -16,6 +16,8 @@ router.get('/public', async (req, res) => {
     if (department) filter.department = department;
     if (rating) filter.rating = { $gte: parseInt(rating) };
 
+    console.log('🔍 Fetching public reviews with filter:', filter);
+
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const reviews = await Review.find(filter)
@@ -24,7 +26,10 @@ router.get('/public', async (req, res) => {
       .limit(parseInt(limit))
       .populate('userId', 'name');
 
+    console.log(`📊 Found ${reviews.length} public reviews`);
+
     const total = await Review.countDocuments(filter);
+    console.log(`📈 Total public reviews in database: ${total}`);
 
     // Calculate statistics
     const stats = await Review.aggregate([
@@ -135,6 +140,20 @@ router.post('/:reportId', protect, async (req, res) => {
     }
 
     // Create review
+    console.log('📝 Creating review with data:', {
+      reportId,
+      userId: req.user._id,
+      userName: req.user.name,
+      department,
+      reportTitle: report.title,
+      rating,
+      comment: comment.substring(0, 50) + '...',
+      experience,
+      resolutionTime,
+      wouldRecommend,
+      isPublic
+    });
+
     const review = await Review.create({
       reportId,
       userId: req.user._id,
@@ -147,6 +166,13 @@ router.post('/:reportId', protect, async (req, res) => {
       resolutionTime,
       wouldRecommend: wouldRecommend !== false,
       isPublic: isPublic !== false
+    });
+
+    console.log('✅ Review created successfully:', {
+      _id: review._id,
+      isPublic: review.isPublic,
+      department: review.department,
+      rating: review.rating
     });
 
     await review.populate('userId', 'name');

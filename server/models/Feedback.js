@@ -14,7 +14,7 @@ const feedbackSchema = new mongoose.Schema({
   },
   senderRole: {
     type: String,
-    enum: ['citizen', 'admin'],
+    enum: ['citizen', 'admin', 'mayor'],
     required: true
   },
   message: {

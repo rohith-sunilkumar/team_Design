@@ -266,27 +266,38 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
                   className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[70%] rounded-lg p-3 ${
+                    className={`max-w-[70%] rounded-xl p-3.5 shadow-md ${
                       isOwnMessage
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white border border-gray-200'
+                        ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white'
+                        : 'bg-white border-2 border-gray-200 text-gray-900'
                     }`}
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs font-semibold ${
-                        isOwnMessage ? 'text-blue-100' : 'text-gray-600'
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={`text-xs font-bold ${
+                        isOwnMessage ? 'text-white' : 'text-gray-800'
                       }`}>
                         {msg.sender.name}
                       </span>
                       {msg.senderRole === 'admin' && (
-                        <span className={`text-xs px-2 py-0.5 rounded ${
-                          isOwnMessage ? 'bg-blue-700' : 'bg-blue-100 text-blue-700'
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                          isOwnMessage ? 'bg-blue-800 text-white' : 'bg-blue-100 text-blue-800'
                         }`}>
                           Admin
                         </span>
                       )}
+                      {msg.senderRole === 'mayor' && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                          isOwnMessage ? 'bg-purple-800 text-white' : 'bg-purple-100 text-purple-800'
+                        }`}>
+                          Mayor
+                        </span>
+                      )}
                     </div>
-                    <p className="text-sm break-words">{msg.message}</p>
+                    <p className={`text-sm break-words leading-relaxed ${
+                      isOwnMessage ? 'text-white' : 'text-gray-900'
+                    }`}>
+                      {msg.message}
+                    </p>
                     {msg.attachments && msg.attachments.length > 0 && (
                       <div className="mt-2 space-y-1">
                         {msg.attachments.map((att, idx) => (
@@ -295,17 +306,17 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
                             href={att.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`text-xs underline block ${
-                              isOwnMessage ? 'text-blue-100' : 'text-blue-600'
+                            className={`text-xs underline block font-medium ${
+                              isOwnMessage ? 'text-blue-100 hover:text-white' : 'text-blue-600 hover:text-blue-800'
                             }`}
                           >
-                            Attachment {idx + 1}
+                            📎 Attachment {idx + 1}
                           </a>
                         ))}
                       </div>
                     )}
-                    <span className={`text-xs mt-1 block ${
-                      isOwnMessage ? 'text-blue-100' : 'text-gray-500'
+                    <span className={`text-xs mt-1.5 block font-medium ${
+                      isOwnMessage ? 'text-blue-100' : 'text-gray-600'
                     }`}>
                       {formatTime(msg.createdAt)}
                     </span>
@@ -316,8 +327,8 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
           )}
           {typing && (
             <div className="flex justify-start">
-              <div className="bg-white border border-gray-200 rounded-lg p-3 max-w-[70%]">
-                <p className="text-sm text-gray-600">{typing} is typing...</p>
+              <div className="bg-white border-2 border-gray-200 rounded-xl p-3 max-w-[70%] shadow-sm">
+                <p className="text-sm text-gray-700 font-medium italic">{typing} is typing...</p>
               </div>
             </div>
           )}
@@ -367,8 +378,10 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
                 handleTyping();
               }}
               placeholder="Type your message..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
               disabled={sending}
+              autoComplete="off"
+              spellCheck="true"
             />
             <button
               type="submit"

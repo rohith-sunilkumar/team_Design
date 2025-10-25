@@ -188,7 +188,14 @@ router.post('/:reportId', protect, upload.array('attachments', 3), [
     }
 
     // Process uploaded attachments with full URL
-    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+    let baseUrl = process.env.BASE_URL;
+    if (!baseUrl) {
+      const host = req.get('host');
+      const protocol = req.protocol;
+      baseUrl = `${protocol}://${host}`;
+      console.log(`📎 Constructed BASE_URL: ${baseUrl} (protocol: ${protocol}, host: ${host})`);
+    }
+    
     const attachments = req.files ? req.files.map(file => ({
       url: `${baseUrl}/uploads/${file.filename}`,
       publicId: file.filename,

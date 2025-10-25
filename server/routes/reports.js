@@ -28,7 +28,14 @@ router.post('/', protect, upload.array('images', 5), [
     const { title, description, location, category: userSelectedCategory } = req.body;
 
     // Process uploaded images with full URL
-    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+    let baseUrl = process.env.BASE_URL;
+    if (!baseUrl) {
+      const host = req.get('host');
+      const protocol = req.protocol;
+      baseUrl = `${protocol}://${host}`;
+      console.log(`📸 Constructed BASE_URL: ${baseUrl} (protocol: ${protocol}, host: ${host})`);
+    }
+    
     const images = req.files ? req.files.map(file => ({
       url: `${baseUrl}/uploads/${file.filename}`,
       publicId: file.filename

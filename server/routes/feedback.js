@@ -187,9 +187,10 @@ router.post('/:reportId', protect, upload.array('attachments', 3), [
       });
     }
 
-    // Process uploaded attachments
+    // Process uploaded attachments with full URL
+    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
     const attachments = req.files ? req.files.map(file => ({
-      url: `/uploads/${file.filename}`,
+      url: `${baseUrl}/uploads/${file.filename}`,
       publicId: file.filename,
       type: file.mimetype.startsWith('image/') ? 'image' : 'document'
     })) : [];

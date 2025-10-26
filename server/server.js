@@ -12,6 +12,8 @@ import feedbackRoutes from './routes/feedback.js';
 import mayorRoutes from './routes/mayor.js';
 import chatRoutes from './routes/chat.js';
 import reviewRoutes from './routes/reviews.js';
+import aiChatRoutes from './routes/aiChat.js';
+import visualAnalysisRoutes from './routes/visualAnalysis.js';
 
 // Load environment variables
 dotenv.config();
@@ -58,7 +60,9 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/mayor', mayorRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/chat', aiChatRoutes); // AI chat assistant
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/visual-analysis', visualAnalysisRoutes); // Local visual analyzer
 
 // 404 handler
 app.use((req, res) => {

@@ -9,10 +9,12 @@ const ReviewsSection = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     console.log('🎬 ReviewsSection component mounted');
     fetchReviews();
+    setShowAll(false); // Reset showAll when filter changes
   }, [filter]);
 
   useEffect(() => {
@@ -22,29 +24,35 @@ const ReviewsSection = () => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const params = filter !== 'all' ? { rating: filter } : {};
+      // Fetch all reviews (no server-side filtering)
+      const params = { limit: 100 };
       const url = `${API_URL}/api/reviews/public`;
       
       console.log('🔍 Fetching reviews from:', url);
       console.log('📊 API_URL:', API_URL);
-      console.log('🎯 Filter params:', params);
+      console.log('🎯 Filter:', filter);
       
       const response = await axios.get(url, { params });
       
       console.log('✅ Reviews response received:', response.data);
-      console.log('📝 Reviews array:', response.data.data?.reviews);
-      console.log('📊 Stats:', response.data.data?.stats);
       
-      const reviewsData = response.data.data?.reviews || [];
+      let reviewsData = response.data.data?.reviews || [];
       const statsData = response.data.data?.stats || null;
+      
+      // Client-side filtering for exact rating match
+      if (filter !== 'all') {
+        const targetRating = parseInt(filter);
+        reviewsData = reviewsData.filter(review => review.rating === targetRating);
+        console.log(`🎯 Filtered to ${reviewsData.length} reviews with exactly ${targetRating} stars`);
+      }
       
       setReviews(reviewsData);
       setStats(statsData);
       
-      console.log(`✅ Successfully loaded ${reviewsData.length} reviews`);
+      console.log(`✅ Successfully loaded ${reviewsData.length} reviews with filter: ${filter}`);
       
       if (reviewsData.length === 0) {
-        console.warn('⚠️ No reviews found in response');
+        console.warn('⚠️ No reviews found matching the filter');
       }
     } catch (error) {
       console.error('❌ Error fetching reviews:', error);
@@ -157,7 +165,7 @@ const ReviewsSection = () => {
 
           {/* Filter */}
           <div className="flex justify-center space-x-2">
-            {['all', '5', '4', '3'].map((rating) => (
+            {['all', '5', '4', '3', '2', '1'].map((rating) => (
               <button
                 key={rating}
                 onClick={() => setFilter(rating)}
@@ -167,7 +175,7 @@ const ReviewsSection = () => {
                     : 'bg-slate-700/50 text-gray-300 hover:bg-slate-600/50'
                 }`}
               >
-                {rating === 'all' ? 'All Reviews' : `${rating}+ Stars`}
+                {rating === 'all' ? 'All Reviews' : `${rating} ⭐`}
               </button>
             ))}
           </div>
@@ -178,73 +186,93 @@ const ReviewsSection = () => {
           <div className="text-center py-12">
             <div className="card max-w-md mx-auto">
               <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-300 text-lg font-semibold mb-2">No reviews yet</p>
-              <p className="text-gray-400">Be the first to share your experience!</p>
+              <p className="text-gray-300 text-lg font-semibold mb-2">
+                {filter === 'all' ? 'No reviews yet' : `No ${filter}-star reviews found`}
+              </p>
+              <p className="text-gray-400">
+                {filter === 'all' 
+                  ? 'Be the first to share your experience!' 
+                  : 'Try selecting a different rating filter'}
+              </p>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reviews.map((review, index) => {
-              const experienceBadge = getExperienceBadge(review.experience);
-              return (
-                <div key={review._id} className="card animate-slide-up hover:scale-105" style={{animationDelay: `${index * 0.1}s`}}>
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getDepartmentColor(review.department)}`}>
-                          {getDepartmentName(review.department)}
-                        </span>
-                        {review.isVerified && (
-                          <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded-full border border-green-500/30">
-                            ✓ Verified
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {(showAll ? reviews : reviews.slice(0, 4)).map((review, index) => {
+                const experienceBadge = getExperienceBadge(review.experience);
+                return (
+                  <div key={review._id} className="card animate-slide-up hover:scale-105" style={{animationDelay: `${index * 0.1}s`}}>
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getDepartmentColor(review.department)}`}>
+                            {getDepartmentName(review.department)}
                           </span>
-                        )}
+                          {review.isVerified && (
+                            <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded-full border border-green-500/30">
+                              ✓ Verified
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="font-semibold text-gray-100 line-clamp-1">
+                          {review.reportTitle}
+                        </h3>
                       </div>
-                      <h3 className="font-semibold text-gray-100 line-clamp-1">
-                        {review.reportTitle}
-                      </h3>
                     </div>
-                  </div>
 
-                  {/* Rating */}
-                  <div className="flex items-center space-x-1 mb-3">
-                    {renderStars(review.rating)}
-                  </div>
-
-                  {/* Experience Badge */}
-                  <div className="mb-3">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${experienceBadge.color}`}>
-                      <span className="mr-1">{experienceBadge.icon}</span>
-                      {review.experience.charAt(0).toUpperCase() + review.experience.slice(1)} Experience
-                    </span>
-                  </div>
-
-                  {/* Comment */}
-                  <p className="text-gray-300 text-sm mb-4 line-clamp-3 italic">
-                    "{review.comment}"
-                  </p>
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between text-xs pt-4 border-t border-slate-700/50">
-                    <div className="flex items-center">
-                      <span className="font-semibold text-purple-400">{review.userName}</span>
+                    {/* Rating */}
+                    <div className="flex items-center space-x-1 mb-3">
+                      {renderStars(review.rating)}
                     </div>
-                    <div className="text-gray-400">
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </div>
-                  </div>
 
-                  {review.resolutionTime && (
-                    <div className="mt-2 text-xs text-gray-400 flex items-center">
-                      <Clock className="h-3 w-3 inline mr-1" />
-                      Resolved in: {review.resolutionTime}
+                    {/* Experience Badge */}
+                    <div className="mb-3">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${experienceBadge.color}`}>
+                        <span className="mr-1">{experienceBadge.icon}</span>
+                        {review.experience.charAt(0).toUpperCase() + review.experience.slice(1)} Experience
+                      </span>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+
+                    {/* Comment */}
+                    <p className="text-gray-300 text-sm mb-4 line-clamp-3 italic">
+                      "{review.comment}"
+                    </p>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between text-xs pt-4 border-t border-slate-700/50">
+                      <div className="flex items-center">
+                        <span className="font-semibold text-purple-400">{review.userName}</span>
+                      </div>
+                      <div className="text-gray-400">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    {review.resolutionTime && (
+                      <div className="mt-2 text-xs text-gray-400 flex items-center">
+                        <Clock className="h-3 w-3 inline mr-1" />
+                        Resolved in: {review.resolutionTime}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* See More Button */}
+            {reviews.length > 4 && (
+              <div className="text-center mt-8">
+                <button
+                  onClick={() => setShowAll(!showAll)}
+                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  {showAll ? 'Show Less' : `See More (${reviews.length - 4} more reviews)`}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import ReviewsSection from '../components/ReviewsSection';
+import AIChatWidget from '../components/AIChatWidget';
 import heroIllustration from '../assets/hero-illustration.svg';
 import {
   AlertCircle,
@@ -27,7 +28,15 @@ import {
 } from 'lucide-react';
 
 const LandingNew = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect mayors to their dashboard
+  React.useEffect(() => {
+    if (isAuthenticated && user?.role === 'mayor') {
+      navigate('/mayor/dashboard');
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const services = [
     {
@@ -463,6 +472,9 @@ const LandingNew = () => {
           </div>
         </div>
       </footer>
+
+      {/* AI Chat Widget */}
+      <AIChatWidget />
     </div>
   );
 };

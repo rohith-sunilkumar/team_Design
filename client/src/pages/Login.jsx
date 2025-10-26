@@ -12,15 +12,21 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { login, isAuthenticated, isAdmin } = useAuth();
+  const { login, logout, isAuthenticated, isAdmin, user } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already logged in
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate(isAdmin ? '/admin/dashboard' : '/');
+      // If mayor is somehow logged in, redirect to mayor login
+      if (user?.role === 'mayor') {
+        logout();
+        navigate('/mayor/login');
+      } else {
+        navigate(isAdmin ? '/admin/dashboard' : '/');
+      }
     }
-  }, [isAuthenticated, isAdmin, navigate]);
+  }, [isAuthenticated, isAdmin, user, navigate, logout]);
 
   const handleChange = (e) => {
     setFormData({
@@ -38,6 +44,18 @@ const Login = () => {
     const result = await login(formData.email, formData.password);
     
     if (result.success) {
+      // Check if user is a mayor - they should use mayor portal
+      if (result.user.role === 'mayor') {
+        // Immediately logout the mayor
+        logout();
+        setError('Access Denied: Mayors must use the Mayor Portal to login. Redirecting...');
+        setLoading(false);
+        setTimeout(() => {
+          navigate('/mayor/login');
+        }, 2000);
+        return;
+      }
+      
       navigate(result.user.role === 'admin' ? '/admin/dashboard' : '/');
     } else {
       setError(result.message);

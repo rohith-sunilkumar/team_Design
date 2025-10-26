@@ -6,7 +6,7 @@ const router = express.Router();
 
 // @route   POST /api/chat/start
 // @desc    Start a new chat or get existing chat with department
-// @access  Private (Citizen)
+// @access  Private (Citizen/Admin/Mayor)
 router.post('/start', protect, async (req, res) => {
   try {
     const { department, reportId, reportTitle } = req.body;
@@ -15,6 +15,22 @@ router.post('/start', protect, async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Department is required'
+      });
+    }
+
+    // Prevent admins from chatting with their own department
+    if (req.user.role === 'admin' && req.user.department === department) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot start a chat with your own department'
+      });
+    }
+
+    // Prevent mayor from chatting with mayor_office
+    if (req.user.role === 'mayor' && department === 'mayor_office') {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot start a chat with your own office'
       });
     }
 
@@ -30,6 +46,8 @@ router.post('/start', protect, async (req, res) => {
       chat = await Chat.create({
         userId: req.user._id,
         userName: req.user.name,
+        userRole: req.user.role,
+        userDepartment: req.user.department || null,
         department,
         reportId,
         reportTitle,
@@ -161,10 +179,19 @@ router.get('/department-chats', protect, async (req, res) => {
       });
     }
 
-    // Mayor sees all chats, admin sees only their department
-    const query = req.user.role === 'mayor' 
-      ? { status: 'active' }
-      : { department: req.user.department, status: 'active' };
+    // Mayor sees chats directed to mayor_office OR started by mayor
+    // Admin sees only their department chats
+    let query;
+    if (req.user.role === 'mayor') {
+      query = {
+        $or: [
+          { department: 'mayor_office', status: 'active' }, // Chats TO mayor
+          { userId: req.user._id, status: 'active' }        // Chats FROM mayor
+        ]
+      };
+    } else {
+      query = { department: req.user.department, status: 'active' };
+    }
 
     // Limit to 50 most recent chats for performance
     const chats = await Chat.find(query)
@@ -267,6 +294,18 @@ router.delete('/:chatId/message/:messageIndex', protect, async (req, res) => {
       return res.status(403).json({
         success: false,
         message: 'You can only delete your own messages'
+      });
+    }
+
+    // Check if message is within 2 minutes of being sent
+    const messageTime = new Date(message.timestamp);
+    const currentTime = new Date();
+    const timeDifferenceInMinutes = (currentTime - messageTime) / (1000 * 60);
+    
+    if (timeDifferenceInMinutes > 2) {
+      return res.status(403).json({
+        success: false,
+        message: 'Messages can only be deleted within 2 minutes of sending'
       });
     }
 

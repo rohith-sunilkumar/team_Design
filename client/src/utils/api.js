@@ -56,7 +56,14 @@ api.interceptors.response.use(
 
 // Auth APIs
 export const authAPI = {
-  register: (data) => api.post('/auth/register', data),
+  register: (data) => {
+    // Check if data is FormData (for admin registration with image)
+    const headers = data instanceof FormData 
+      ? { 'Content-Type': 'multipart/form-data' }
+      : { 'Content-Type': 'application/json' };
+    
+    return api.post('/auth/register', data, { headers });
+  },
   login: (data) => api.post('/auth/login', data),
   getMe: () => api.get('/auth/me')
 };

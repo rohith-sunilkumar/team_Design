@@ -40,6 +40,12 @@ const userSchema = new mongoose.Schema({
   phone: {
     type: String,
     trim: true
+  },
+  departmentCardImage: {
+    type: String,
+    required: function() {
+      return this.role === 'admin';
+    }
   }
 }, {
   timestamps: true

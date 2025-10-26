@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
+import Review from '../models/Review.js';
 import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -454,6 +455,132 @@ router.delete('/delete-report/:collectionName/:id', protect, authorize('mayor'),
     });
   } catch (error) {
     console.error('Error deleting report:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+});
+
+// @route   GET /api/mayor/recent-feedback
+// @desc    Get count of recent feedback/reviews (last 24 hours)
+// @access  Private (Mayor only)
+router.get('/recent-feedback', protect, authorize('mayor'), async (req, res) => {
+  try {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    
+    const recentReviews = await Review.countDocuments({
+      createdAt: { $gte: twentyFourHoursAgo }
+    });
+
+    // Get negative reviews (3 stars or below)
+    const negativeReviews = await Review.countDocuments({
+      createdAt: { $gte: twentyFourHoursAgo },
+      rating: { $lte: 3 }
+    });
+
+    // Get positive reviews (4-5 stars)
+    const positiveReviews = await Review.countDocuments({
+      createdAt: { $gte: twentyFourHoursAgo },
+      rating: { $gte: 4 }
+    });
+
+    const allReviews = await Review.find({
+      createdAt: { $gte: twentyFourHoursAgo }
+    }).sort({ createdAt: -1 }).limit(10);
+
+    // Get negative reviews with details
+    const negativeReviewsDetails = await Review.find({
+      createdAt: { $gte: twentyFourHoursAgo },
+      rating: { $lte: 3 }
+    }).sort({ createdAt: -1 }).limit(10);
+
+    // Get average rating
+    const avgRating = allReviews.length > 0 
+      ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length).toFixed(1)
+      : 0;
+
+    res.json({
+      success: true,
+      data: {
+        recentCount: recentReviews,
+        negativeCount: negativeReviews,
+        positiveCount: positiveReviews,
+        reviews: allReviews,
+        negativeReviews: negativeReviewsDetails,
+        averageRating: parseFloat(avgRating)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching recent feedback:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+});
+
+// @route   GET /api/mayor/feedback-stats
+// @desc    Get overall feedback statistics
+// @access  Private (Mayor only)
+router.get('/feedback-stats', protect, authorize('mayor'), async (req, res) => {
+  try {
+    const totalReviews = await Review.countDocuments();
+    
+    // Get reviews from last 7 days
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const recentReviews = await Review.countDocuments({
+      createdAt: { $gte: sevenDaysAgo }
+    });
+
+    // Get average rating
+    const ratingStats = await Review.aggregate([
+      {
+        $group: {
+          _id: null,
+          avgRating: { $avg: '$rating' },
+          totalReviews: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Get rating distribution
+    const ratingDistribution = await Review.aggregate([
+      {
+        $group: {
+          _id: '$rating',
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: -1 } }
+    ]);
+
+    // Get department-wise feedback
+    const departmentFeedback = await Review.aggregate([
+      {
+        $group: {
+          _id: '$department',
+          count: { $sum: 1 },
+          avgRating: { $avg: '$rating' }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalReviews,
+        recentReviews,
+        averageRating: ratingStats[0]?.avgRating?.toFixed(1) || 0,
+        ratingDistribution,
+        departmentFeedback
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching feedback stats:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',

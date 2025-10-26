@@ -10,7 +10,8 @@ import {
   TrendingUp,
   Filter,
   Eye,
-  Edit
+  Edit,
+  MessageCircle
 } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -100,9 +101,18 @@ const AdminDashboard = () => {
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-        <div className="mb-8 animate-slide-down">
-          <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
-          <p className="text-gray-300 mt-1">Manage and monitor civic issue reports</p>
+        <div className="mb-8 animate-slide-down flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
+            <p className="text-gray-300 mt-1">Manage and monitor civic issue reports</p>
+          </div>
+          <Link
+            to="/chat"
+            className="btn-primary flex items-center space-x-2 hover:scale-105 transition-transform duration-300"
+          >
+            <MessageCircle className="h-5 w-5" />
+            <span>Department Chats</span>
+          </Link>
         </div>
 
         {/* View Toggle */}

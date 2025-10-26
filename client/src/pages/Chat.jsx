@@ -18,6 +18,7 @@ const Chat = () => {
   const [sending, setSending] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
   const [newChatDept, setNewChatDept] = useState('');
+  const [currentTime, setCurrentTime] = useState(new Date());
   
   const messagesEndRef = useRef(null);
 
@@ -32,6 +33,15 @@ const Chat = () => {
   useEffect(() => {
     scrollToBottom();
   }, [selectedChat]);
+
+  // Update current time every second to hide delete buttons after 2 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -178,12 +188,13 @@ const Chat = () => {
           <h1 className="text-3xl font-bold gradient-text">
             {(user.role === 'admin' || user.role === 'mayor') ? 'Department Chats' : 'My Chats'}
           </h1>
-          {user.role === 'citizen' && (
+          {(user.role === 'citizen' || user.role === 'admin' || user.role === 'mayor') && (
             <button
               onClick={() => setShowNewChat(true)}
-              className="btn-primary"
+              className="btn-primary flex items-center space-x-2"
             >
-              New Chat
+              <MessageCircle className="h-5 w-5" />
+              <span>New Chat</span>
             </button>
           )}
         </div>
@@ -219,7 +230,12 @@ const Chat = () => {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm font-medium text-gray-100">{chat.userName}</p>
+                    <p className="text-sm font-medium text-gray-100">
+                      {chat.userName}
+                      {chat.userRole && chat.userRole !== 'citizen' && (
+                        <span className="ml-2 text-xs text-violet-400">({chat.userRole})</span>
+                      )}
+                    </p>
                     <p className="text-xs text-gray-500 truncate">{chat.lastMessage || 'No messages yet'}</p>
                     <p className="text-xs text-gray-400 mt-1">
                       {new Date(chat.lastMessageTime).toLocaleString()}
@@ -258,6 +274,12 @@ const Chat = () => {
                   ) : (
                     selectedChat.messages.map((msg, index) => {
                       const isOwn = msg.senderId === user._id;
+                      // Check if message is within 2 minutes
+                      const messageTime = new Date(msg.timestamp);
+                      const currentTime = new Date();
+                      const timeDifferenceInMinutes = (currentTime - messageTime) / (1000 * 60);
+                      const canDelete = isOwn && timeDifferenceInMinutes <= 2;
+                      
                       return (
                         <div
                           key={index}
@@ -281,11 +303,11 @@ const Chat = () => {
                                     {new Date(msg.timestamp).toLocaleTimeString()}
                                   </p>
                                 </div>
-                                {isOwn && (
+                                {canDelete && (
                                   <button
                                     onClick={() => deleteMessage(index)}
                                     className="flex-shrink-0 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold hover:scale-105 transition-all duration-200"
-                                    title="Delete message"
+                                    title="Delete message (within 2 minutes)"
                                   >
                                     Delete
                                   </button>
@@ -345,9 +367,23 @@ const Chat = () => {
               </div>
 
               <div className="space-y-4">
+                {user.role === 'admin' && (
+                  <div className="bg-blue-900/30 border border-blue-500/30 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-blue-200">
+                      💬 Start a conversation with other departments or the mayor for coordination and support.
+                    </p>
+                  </div>
+                )}
+                {user.role === 'mayor' && (
+                  <div className="bg-purple-900/30 border border-purple-500/30 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-purple-200">
+                      👑 Start a conversation with any department to provide guidance, approvals, or support.
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Select Department
+                    {user.role === 'admin' ? 'Select Department or Mayor' : user.role === 'mayor' ? 'Select Department' : 'Select Department'}
                   </label>
                   <select
                     value={newChatDept}
@@ -355,12 +391,24 @@ const Chat = () => {
                     className="input-field"
                   >
                     <option value="">Choose a department...</option>
-                    <option value="mayor_office">🏛️ Mayor Office</option>
-                    <option value="road_service">Road Service</option>
-                    <option value="water_management">Water Management</option>
-                    <option value="electrical_service">Electrical Service</option>
-                    <option value="hospital_emergency">Hospital Emergency</option>
-                    <option value="general">General</option>
+                    {user.role !== 'mayor' && (
+                      <option value="mayor_office">🏛️ Mayor Office</option>
+                    )}
+                    {(user.role === 'citizen' || user.role === 'mayor' || (user.role === 'admin' && user.department !== 'road_service')) && (
+                      <option value="road_service">🛣️ Road Service</option>
+                    )}
+                    {(user.role === 'citizen' || user.role === 'mayor' || (user.role === 'admin' && user.department !== 'water_management')) && (
+                      <option value="water_management">💧 Water Management</option>
+                    )}
+                    {(user.role === 'citizen' || user.role === 'mayor' || (user.role === 'admin' && user.department !== 'electrical_service')) && (
+                      <option value="electrical_service">⚡ Electrical Service</option>
+                    )}
+                    {(user.role === 'citizen' || user.role === 'mayor' || (user.role === 'admin' && user.department !== 'hospital_emergency')) && (
+                      <option value="hospital_emergency">🏥 Hospital Emergency</option>
+                    )}
+                    {(user.role === 'citizen' || user.role === 'mayor' || (user.role === 'admin' && user.department !== 'general')) && (
+                      <option value="general">📋 General</option>
+                    )}
                   </select>
                 </div>
 

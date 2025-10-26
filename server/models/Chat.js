@@ -41,6 +41,16 @@ const chatSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  userRole: {
+    type: String,
+    enum: ['citizen', 'admin', 'mayor'],
+    default: 'citizen'
+  },
+  userDepartment: {
+    type: String,
+    enum: ['road_service', 'hospital_emergency', 'water_management', 'electrical_service', 'general', null],
+    default: null
+  },
   department: {
     type: String,
     enum: ['mayor_office', 'road_service', 'hospital_emergency', 'water_management', 'electrical_service', 'general'],

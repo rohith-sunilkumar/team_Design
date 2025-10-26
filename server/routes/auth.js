@@ -5,6 +5,8 @@ import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
+import { cloudinary, upload } from '../config/cloudinary.js';
+import fs from 'fs';
 
 const router = express.Router();
 
@@ -21,7 +23,7 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @desc    Register a new user
 // @access  Public
-router.post('/register', [
+router.post('/register', upload.single('departmentCardImage'), [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
@@ -42,6 +44,10 @@ router.post('/register', [
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      // Clean up uploaded file if exists
+      if (req.file) {
+        fs.unlinkSync(req.file.path);
+      }
       return res.status(400).json({
         success: false,
         message: 'User already exists with this email'
@@ -50,10 +56,53 @@ router.post('/register', [
 
     // Validate department for admin
     if (role === 'admin' && !department) {
+      // Clean up uploaded file if exists
+      if (req.file) {
+        fs.unlinkSync(req.file.path);
+      }
       return res.status(400).json({
         success: false,
         message: 'Department is required for admin users'
       });
+    }
+
+    // Validate department card image for admin
+    if (role === 'admin' && !req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Department card image is required for admin users'
+      });
+    }
+
+    let departmentCardImageUrl = null;
+
+    // Upload image to Cloudinary if admin
+    if (role === 'admin' && req.file) {
+      // Check if Cloudinary is configured
+      const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && 
+                                     process.env.CLOUDINARY_API_KEY && 
+                                     process.env.CLOUDINARY_API_SECRET;
+
+      if (isCloudinaryConfigured) {
+        try {
+          const result = await cloudinary.uploader.upload(req.file.path, {
+            folder: 'department_cards',
+            resource_type: 'image'
+          });
+          departmentCardImageUrl = result.secure_url;
+          // Delete local file after upload
+          fs.unlinkSync(req.file.path);
+        } catch (uploadError) {
+          console.error('Cloudinary upload error:', uploadError);
+          // Fallback to local storage
+          console.log('Falling back to local storage for department card image');
+          departmentCardImageUrl = `/uploads/${req.file.filename}`;
+        }
+      } else {
+        // Use local storage if Cloudinary is not configured
+        console.log('Cloudinary not configured, using local storage for department card image');
+        departmentCardImageUrl = `/uploads/${req.file.filename}`;
+      }
     }
 
     // Create user
@@ -63,7 +112,8 @@ router.post('/register', [
       password,
       role: role || 'citizen',
       phone,
-      department: role === 'admin' ? department : undefined
+      department: role === 'admin' ? department : undefined,
+      departmentCardImage: departmentCardImageUrl
     });
 
     const token = generateToken(user._id);

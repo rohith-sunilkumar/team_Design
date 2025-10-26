@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
-import { Mail, Lock, User, AlertCircle, CheckCircle, Shield, Users, Building2 } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, CheckCircle, Shield, Users, Building2, Upload, X, Image } from 'lucide-react';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,8 +12,10 @@ const Register = () => {
     confirmPassword: '',
     phone: '',
     role: 'citizen',
-    department: ''
+    department: '',
+    departmentCardImage: null
   });
+  const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,6 +36,41 @@ const Register = () => {
       [e.target.name]: e.target.value
     });
     setError('');
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size should be less than 5MB');
+        return;
+      }
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file');
+        return;
+      }
+      setFormData({
+        ...formData,
+        departmentCardImage: file
+      });
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setError('');
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({
+      ...formData,
+      departmentCardImage: null
+    });
+    setImagePreview(null);
   };
 
   const handleSubmit = async (e) => {
@@ -61,14 +98,26 @@ const Register = () => {
       return;
     }
 
-    const result = await register({
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      phone: formData.phone,
-      role: formData.role,
-      department: formData.role === 'admin' ? formData.department : undefined
-    });
+    // Validate department card image for admin
+    if (formData.role === 'admin' && !formData.departmentCardImage) {
+      setError('Please upload your department card image for verification');
+      setLoading(false);
+      return;
+    }
+
+    // Create FormData for file upload
+    const submitData = new FormData();
+    submitData.append('name', formData.name);
+    submitData.append('email', formData.email);
+    submitData.append('password', formData.password);
+    submitData.append('phone', formData.phone);
+    submitData.append('role', formData.role);
+    if (formData.role === 'admin') {
+      submitData.append('department', formData.department);
+      submitData.append('departmentCardImage', formData.departmentCardImage);
+    }
+
+    const result = await register(submitData, formData.role === 'admin');
     
     if (result.success) {
       if (result.needsApproval || formData.role === 'admin') {
@@ -83,8 +132,10 @@ const Register = () => {
           confirmPassword: '',
           phone: '',
           role: 'citizen',
-          department: ''
+          department: '',
+          departmentCardImage: null
         });
+        setImagePreview(null);
       } else {
         // Citizen registered - auto-login and navigate
         navigate('/');
@@ -229,6 +280,50 @@ const Register = () => {
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
                     You will only see reports assigned to your department
+                  </p>
+                </div>
+
+                {/* Department Card Image Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Department Card Image <span className="text-red-500">*</span>
+                  </label>
+                  <div className="mt-1">
+                    {!imagePreview ? (
+                      <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-violet-500/50 rounded-lg cursor-pointer bg-slate-800/50 hover:bg-slate-800/70 transition-all duration-300">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="h-10 w-10 text-violet-400 mb-3" />
+                          <p className="mb-2 text-sm text-gray-300">
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-400">PNG, JPG, JPEG (MAX. 5MB)</p>
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                        />
+                      </label>
+                    ) : (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Department Card Preview"
+                          className="w-full h-48 object-cover rounded-lg border-2 border-violet-500/50"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute top-2 right-2 p-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Upload a clear photo of your department ID card for verification by the mayor
                   </p>
                 </div>
               </>

@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { reportAPI } from '../utils/api';
 import { Upload, MapPin, AlertCircle, CheckCircle, Sparkles, X, Building2 } from 'lucide-react';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
 
 const ReportIssue = () => {
   const [formData, setFormData] = useState({
@@ -18,8 +21,59 @@ const ReportIssue = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState(null);
+  const [analyzingText, setAnalyzingText] = useState(false);
 
   const navigate = useNavigate();
+
+  // Auto-analyze text when user types title or description
+  useEffect(() => {
+    const analyzeText = async () => {
+      if (!formData.title && !formData.description) {
+        setAiSuggestion(null);
+        return;
+      }
+
+      // Only analyze if we have enough text
+      const combinedText = `${formData.title} ${formData.description}`.trim();
+      if (combinedText.length < 10) {
+        setAiSuggestion(null);
+        return;
+      }
+
+      setAnalyzingText(true);
+      try {
+        const response = await axios.post(`${API_URL}/api/visual-analysis/analyze`, {
+          title: formData.title,
+          description: formData.description,
+          location: formData.address
+        });
+
+        if (response.data.success) {
+          const suggestion = response.data.data;
+          setAiSuggestion(suggestion);
+          
+          // Auto-apply if it's a high-priority health emergency with high confidence
+          if (suggestion.priority_level === 'High' && 
+              suggestion.confidence_score >= 0.85 &&
+              !formData.department) {
+            setFormData(prev => ({
+              ...prev,
+              department: suggestion.predicted_department
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error analyzing text:', error);
+      } finally {
+        setAnalyzingText(false);
+      }
+    };
+
+    // Debounce the analysis
+    const timeoutId = setTimeout(analyzeText, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [formData.title, formData.description, formData.address]);
 
   const handleChange = (e) => {
     setFormData({
@@ -27,6 +81,15 @@ const ReportIssue = () => {
       [e.target.name]: e.target.value
     });
     setError('');
+  };
+
+  const acceptAiSuggestion = () => {
+    if (aiSuggestion) {
+      setFormData({
+        ...formData,
+        department: aiSuggestion.predicted_department
+      });
+    }
   };
 
   const handleImageChange = (e) => {
@@ -239,11 +302,85 @@ const ReportIssue = () => {
               </p>
             </div>
 
+            {/* AI Suggestion */}
+            {aiSuggestion && (
+              <div className={`border rounded-lg p-4 animate-slide-down ${
+                formData.department === aiSuggestion.predicted_department
+                  ? 'bg-gradient-to-r from-green-900/30 to-emerald-900/30 border-green-500/30'
+                  : 'bg-gradient-to-r from-purple-900/30 to-pink-900/30 border-purple-500/30'
+              }`}>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-2">
+                      {formData.department === aiSuggestion.predicted_department ? (
+                        <>
+                          <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
+                          <h3 className="font-semibold text-gray-100">Auto-Applied: {aiSuggestion.priority_level} Priority Emergency</h3>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-5 w-5 text-purple-400 mr-2" />
+                          <h3 className="font-semibold text-gray-100">AI Analysis Complete</h3>
+                        </>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <p className="text-xs text-gray-400">Suggested Department</p>
+                        <p className={`font-semibold ${
+                          formData.department === aiSuggestion.predicted_department 
+                            ? 'text-green-300' 
+                            : 'text-purple-300'
+                        }`}>
+                          {aiSuggestion.predicted_department}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400">Priority Level</p>
+                        <p className={`font-semibold ${
+                          aiSuggestion.priority_level === 'High' ? 'text-red-400' :
+                          aiSuggestion.priority_level === 'Medium' ? 'text-yellow-400' :
+                          'text-green-400'
+                        }`}>
+                          {aiSuggestion.priority_level}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mb-3">
+                      Confidence: {(aiSuggestion.confidence_score * 100).toFixed(0)}% • {aiSuggestion.notes}
+                    </p>
+                    {formData.department !== aiSuggestion.predicted_department && (
+                      <button
+                        type="button"
+                        onClick={acceptAiSuggestion}
+                        className="btn-secondary text-sm py-2 px-4"
+                      >
+                        ✓ Accept Suggestion
+                      </button>
+                    )}
+                    {formData.department === aiSuggestion.predicted_department && (
+                      <p className="text-xs text-green-400 flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Department automatically selected for emergency response
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {analyzingText && (
+              <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-3 flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500 mr-3"></div>
+                <p className="text-sm text-gray-400">Analyzing your report...</p>
+              </div>
+            )}
+
             {/* Department Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 <Building2 className="inline h-4 w-4 mr-1" />
-                Department (Optional)
+                Department {formData.department && '(Selected)'}
               </label>
               <select
                 name="department"
@@ -252,14 +389,21 @@ const ReportIssue = () => {
                 className="input-field"
               >
                 <option value="">Let AI decide automatically</option>
-                <option value="Road Service Department">Road Service Department</option>
-                <option value="Hospital Emergency Department">Hospital Emergency Department</option>
-                <option value="Water Management Department">Water Management Department</option>
-                <option value="Electrical Service Department">Electrical Service Department</option>
-                <option value="General Department">General Department</option>
+                <option value="Roads & Infrastructure">Roads & Infrastructure</option>
+                <option value="Hospital Emergency">Hospital Emergency</option>
+                <option value="Water Supply">Water Supply</option>
+                <option value="Street Lighting & Electricity">Street Lighting & Electricity</option>
+                <option value="Sanitation & Waste">Sanitation & Waste</option>
+                <option value="Drainage & Sewage">Drainage & Sewage</option>
+                <option value="Environment & Parks">Environment & Parks</option>
+                <option value="Construction & Public Safety">Construction & Public Safety</option>
+                <option value="Public Property Damage">Public Property Damage</option>
+                <option value="Animal Control">Animal Control</option>
+                <option value="Traffic Management">Traffic Management</option>
+                <option value="Other Civic Issue">Other Civic Issue</option>
               </select>
               <p className="text-sm text-gray-400 mt-1">
-                💡 If you know which department should handle this, select it. Otherwise, our AI will automatically assign it.
+                💡 You can override the AI suggestion or let it decide automatically
               </p>
             </div>
 

@@ -89,13 +89,12 @@ router.post('/', protect, upload.array('images', 5), [
     console.log(`📝 Creating report in ${department} collection`);
 
     // Create report in department-specific collection
-    const report = await DepartmentModel.create({
+    const reportData = {
       title,
       description,
       category,
       priority,
       images,
-      location: parsedLocation,
       reporter: req.user._id,
       assignedDepartment: department,
       ai_metadata: {
@@ -104,7 +103,14 @@ router.post('/', protect, upload.array('images', 5), [
         confidence: aiResult.confidence,
         reasoning: aiResult.reasoning
       }
-    });
+    };
+
+    // Only add location if it's properly defined
+    if (parsedLocation) {
+      reportData.location = parsedLocation;
+    }
+
+    const report = await DepartmentModel.create(reportData);
 
     const populatedReport = await DepartmentModel.findById(report._id).populate('reporter', 'name email');
 

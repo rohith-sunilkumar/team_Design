@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
+import { getImageUrl } from '../utils/api';
 import { 
   Crown, Users, CheckCircle, Clock, XCircle, 
-  Shield, AlertCircle, Trash2, UserCheck, FileText, Filter, Edit, Eye
+  Shield, AlertCircle, Trash2, UserCheck, FileText, Filter, Edit, Eye, MessageCircle
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
@@ -27,6 +28,8 @@ const MayorDashboard = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [editingReport, setEditingReport] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [viewingCardAdmin, setViewingCardAdmin] = useState(null);
+  const [showCardModal, setShowCardModal] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'mayor') {
@@ -119,8 +122,14 @@ const MayorDashboard = () => {
   };
 
   const handleViewReport = (report) => {
-    // Navigate to the report detail page
-    navigate(`/reports/${report._id}`);
+    // Navigate to the report detail page with collection info
+    // Pass collection name as state so ReportDetail can fetch from correct collection
+    navigate(`/reports/${report._id}`, { 
+      state: { 
+        collectionName: report.collectionName,
+        department: report.department 
+      } 
+    });
   };
 
   const handleEditReport = (report) => {
@@ -230,9 +239,18 @@ const MayorDashboard = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <Crown className="h-8 w-8 text-violet-400 mr-3" />
-            <h1 className="text-3xl font-bold gradient-text">Mayor Dashboard</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <Crown className="h-8 w-8 text-violet-400 mr-3" />
+              <h1 className="text-3xl font-bold gradient-text">Mayor Dashboard</h1>
+            </div>
+            <Link
+              to="/chat"
+              className="btn-primary flex items-center space-x-2 hover:scale-105 transition-transform duration-300"
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span>Department Chats</span>
+            </Link>
           </div>
           <p className="text-gray-300">Manage admin accounts and monitor system activity</p>
         </div>
@@ -550,6 +568,9 @@ const MayorDashboard = () => {
                       Department
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-violet-300 uppercase tracking-wider">
+                      Dept. Card
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-violet-300 uppercase tracking-wider">
                       Status
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-violet-300 uppercase tracking-wider">
@@ -573,6 +594,22 @@ const MayorDashboard = () => {
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${getDepartmentBadgeColor(admin.department)}`}>
                           {getDepartmentName(admin.department)}
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {admin.departmentCardImage ? (
+                          <button
+                            onClick={() => {
+                              setViewingCardAdmin(admin);
+                              setShowCardModal(true);
+                            }}
+                            className="inline-flex items-center px-3 py-1.5 bg-blue-900/30 border border-blue-500/30 text-blue-300 rounded-lg hover:bg-blue-900/50 transition-colors"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View Card
+                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-500 italic">No image</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         {admin.isApproved ? (
@@ -723,6 +760,101 @@ const MayorDashboard = () => {
             </div>
           </div>
         )}
+
+      {/* Department Card Image Modal */}
+      {showCardModal && viewingCardAdmin && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999] p-4"
+          onClick={() => { setShowCardModal(false); setViewingCardAdmin(null); }}
+        >
+          <div 
+            className="bg-slate-900 rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border-2 border-violet-500/30"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-violet-400">Department Card Verification</h3>
+                  <p className="text-gray-300 mt-1">
+                    <span className="font-semibold">{viewingCardAdmin.name}</span> - {getDepartmentName(viewingCardAdmin.department)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setShowCardModal(false); setViewingCardAdmin(null); }}
+                  className="text-gray-400 hover:text-gray-200 transition-colors"
+                >
+                  <XCircle className="h-8 w-8" />
+                </button>
+              </div>
+
+              {/* Admin Info */}
+              <div className="bg-slate-800/50 border border-violet-500/30 rounded-lg p-4 mb-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-400">Email</p>
+                    <p className="text-gray-200 font-medium">{viewingCardAdmin.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Phone</p>
+                    <p className="text-gray-200 font-medium">{viewingCardAdmin.phone || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Department</p>
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getDepartmentBadgeColor(viewingCardAdmin.department)}`}>
+                      {getDepartmentName(viewingCardAdmin.department)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Registration Date</p>
+                    <p className="text-gray-200 font-medium">{new Date(viewingCardAdmin.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Department Card Image */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-violet-300 mb-3">Department ID Card</label>
+                <div className="bg-slate-800 rounded-lg p-2 border-2 border-violet-500/30">
+                  <img
+                    src={getImageUrl(viewingCardAdmin.departmentCardImage)}
+                    alt="Department Card"
+                    className="w-full h-auto rounded-lg"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/800x400?text=Image+Not+Available';
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  ℹ️ Verify that the department card matches the admin's information and department selection
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3 pt-6 border-t border-slate-700">
+                <button
+                  onClick={() => { setShowCardModal(false); setViewingCardAdmin(null); }}
+                  className="px-6 py-2 border border-slate-600 text-gray-300 rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  Close
+                </button>
+                {!viewingCardAdmin.isApproved && (
+                  <button
+                    onClick={() => {
+                      handleApprove(viewingCardAdmin._id);
+                      setShowCardModal(false);
+                      setViewingCardAdmin(null);
+                    }}
+                    className="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-colors font-semibold shadow-lg"
+                  >
+                    <UserCheck className="inline h-5 w-5 mr-2" />
+                    Approve Admin
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

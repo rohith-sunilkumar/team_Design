@@ -21,7 +21,7 @@ import Chat from './pages/Chat';
 import NotFound from './pages/NotFound';
 
 // Protected Route Component
-const ProtectedRoute = ({ children, adminOnly = false, mayorOnly = false, adminOrMayor = false }) => {
+const ProtectedRoute = ({ children, adminOnly = false, mayorOnly = false, adminOrMayor = false, citizenOnly = false, allRoles = false }) => {
   const { isAuthenticated, isAdmin, user, loading } = useAuth();
 
   if (loading) {
@@ -36,16 +36,26 @@ const ProtectedRoute = ({ children, adminOnly = false, mayorOnly = false, adminO
     return <Navigate to="/login" replace />;
   }
 
+  // Redirect mayors to their dashboard if they try to access non-mayor routes
+  // Exception: allRoles flag allows all authenticated users
+  if (!mayorOnly && !adminOrMayor && !allRoles && user?.role === 'mayor') {
+    return <Navigate to="/mayor/dashboard" replace />;
+  }
+
   if (adminOnly && !isAdmin) {
     return <Navigate to="/" replace />;
   }
 
   if (mayorOnly && user?.role !== 'mayor') {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/mayor/login" replace />;
   }
 
   if (adminOrMayor && !isAdmin && user?.role !== 'mayor') {
     return <Navigate to="/" replace />;
+  }
+
+  if (citizenOnly && (isAdmin || user?.role === 'mayor')) {
+    return <Navigate to={user?.role === 'mayor' ? '/mayor/dashboard' : '/admin/dashboard'} replace />;
   }
 
   return children;
@@ -71,7 +81,7 @@ function AppRoutes() {
       <Route
         path="/report"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute citizenOnly>
             <ReportIssue />
           </ProtectedRoute>
         }
@@ -80,7 +90,7 @@ function AppRoutes() {
       <Route
         path="/my-reports"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute citizenOnly>
             <MyReports />
           </ProtectedRoute>
         }
@@ -98,7 +108,7 @@ function AppRoutes() {
       <Route
         path="/reports/:id"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute adminOrMayor>
             <ReportDetail />
           </ProtectedRoute>
         }
@@ -136,7 +146,7 @@ function AppRoutes() {
       <Route
         path="/chat"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allRoles>
             <Chat />
           </ProtectedRoute>
         }

@@ -68,18 +68,34 @@ router.post('/', protect, upload.array('images', 5), [
       aiResult = await classifyComplaint(title, description, imagePaths);
     }
 
-    const { category, priority, department } = aiResult;
+    const { category, department } = aiResult;
+    let { priority } = aiResult;
+
+    // If the reporter is a mayor, automatically set priority to high
+    if (req.user.role === 'mayor') {
+      priority = 'high';
+      console.log('👑 Mayor report detected - Priority automatically set to HIGH');
+    }
 
     // Parse location
     let parsedLocation = undefined;
     if (location) {
-      const locationData = typeof location === 'string' ? JSON.parse(location) : location;
-      if (locationData.coordinates?.length === 2) {
-        parsedLocation = {
-          type: 'Point',
-          coordinates: locationData.coordinates,
-          address: locationData.address || ''
-        };
+      try {
+        const locationData = typeof location === 'string' ? JSON.parse(location) : location;
+        // Only create location if coordinates are valid (2 numeric elements)
+        if (locationData.coordinates && 
+            Array.isArray(locationData.coordinates) && 
+            locationData.coordinates.length === 2 &&
+            typeof locationData.coordinates[0] === 'number' &&
+            typeof locationData.coordinates[1] === 'number') {
+          parsedLocation = {
+            type: 'Point',
+            coordinates: locationData.coordinates,
+            address: locationData.address || ''
+          };
+        }
+      } catch (error) {
+        console.log('⚠️  Invalid location data, skipping location field');
       }
     }
 

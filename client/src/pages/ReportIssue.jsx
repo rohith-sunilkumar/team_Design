@@ -157,16 +157,15 @@ const ReportIssue = () => {
         formDataToSend.append('category', formData.department);
       }
       
-      if (location) {
+      // Only send location if we have valid coordinates
+      if (location && location.coordinates && location.coordinates.length === 2) {
         formDataToSend.append('location', JSON.stringify({
           coordinates: location.coordinates,
-          address: formData.address
-        }));
-      } else if (formData.address) {
-        formDataToSend.append('location', JSON.stringify({
-          address: formData.address
+          address: formData.address || ''
         }));
       }
+      // Don't send location if we only have address without coordinates
+      // The address field is separate and doesn't need geolocation
 
       images.forEach((image) => {
         formDataToSend.append('images', image);

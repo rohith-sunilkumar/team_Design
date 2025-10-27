@@ -81,7 +81,7 @@ function AppRoutes() {
       <Route
         path="/report"
         element={
-          <ProtectedRoute citizenOnly>
+          <ProtectedRoute allRoles>
             <ReportIssue />
           </ProtectedRoute>
         }
@@ -108,7 +108,7 @@ function AppRoutes() {
       <Route
         path="/reports/:id"
         element={
-          <ProtectedRoute adminOrMayor>
+          <ProtectedRoute allRoles>
             <ReportDetail />
           </ProtectedRoute>
         }

@@ -91,6 +91,12 @@ const Navbar = () => {
                       <span>Dashboard</span>
                     </Link>
                     <Link
+                      to="/report"
+                      className="bg-gradient-to-r from-violet-600 to-purple-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-violet-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
+                    >
+                      Report Issue
+                    </Link>
+                    <Link
                       to="/admin/reports"
                       className="flex items-center space-x-1 text-gray-300 hover:text-violet-400 transition-all duration-300 hover:scale-110 transform"
                     >
@@ -543,6 +549,14 @@ const Navbar = () => {
                       >
                         <LayoutDashboard className="h-5 w-5" />
                         <span>Dashboard</span>
+                      </Link>
+                      <Link
+                        to="/report"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg font-semibold"
+                      >
+                        <FileText className="h-5 w-5" />
+                        <span>Report Issue</span>
                       </Link>
                       <Link
                         to="/admin/reports"

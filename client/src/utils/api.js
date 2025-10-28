@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://team-design.onrender.com/api';
-const BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://team-design.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002/api';
+const BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5002';
 
 // Helper function to get full image URL
 export const getImageUrl = (imagePath) => {
@@ -87,6 +87,12 @@ export const reportAPI = {
 // Stats APIs
 export const statsAPI = {
   getDashboard: () => api.get('/stats')
+};
+
+// Notification APIs
+export const notificationAPI = {
+  getNotifications: () => api.get('/notifications'),
+  markAsRead: (notificationId) => api.post('/notifications/mark-read', { notificationId })
 };
 
 export default api;

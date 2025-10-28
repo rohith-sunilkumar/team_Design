@@ -245,11 +245,11 @@ const MayorDashboard = () => {
               <h1 className="text-3xl font-bold gradient-text">Mayor Dashboard</h1>
             </div>
             <Link
-              to="/chat"
+              to="/mayor-alert"
               className="btn-primary flex items-center space-x-2 hover:scale-105 transition-transform duration-300"
             >
-              <MessageCircle className="h-5 w-5" />
-              <span>Department Chats</span>
+              <AlertCircle className="h-5 w-5" />
+              <span>Mayor Alert</span>
             </Link>
           </div>
           <p className="text-gray-300">Manage admin accounts and monitor system activity</p>

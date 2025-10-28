@@ -17,6 +17,7 @@ import AdminReports from './pages/AdminReports';
 import UserDashboard from './pages/UserDashboard';
 import MayorLogin from './pages/MayorLogin';
 import MayorDashboard from './pages/MayorDashboard';
+import MayorAlert from './pages/MayorAlert';
 import Chat from './pages/Chat';
 import NotFound from './pages/NotFound';
 
@@ -139,6 +140,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute mayorOnly>
             <MayorDashboard />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/mayor-alert"
+        element={
+          <ProtectedRoute mayorOnly>
+            <MayorAlert />
           </ProtectedRoute>
         }
       />

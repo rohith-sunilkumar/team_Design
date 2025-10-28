@@ -53,15 +53,8 @@ const ReportIssue = () => {
           const suggestion = response.data.data;
           setAiSuggestion(suggestion);
           
-          // Auto-apply if it's a high-priority health emergency with high confidence
-          if (suggestion.priority_level === 'High' && 
-              suggestion.confidence_score >= 0.85 &&
-              !formData.department) {
-            setFormData(prev => ({
-              ...prev,
-              department: suggestion.predicted_department
-            }));
-          }
+          // Only show AI suggestion, don't auto-apply
+          // User must explicitly choose to accept the suggestion
         }
       } catch (error) {
         console.error('Error analyzing text:', error);
@@ -314,7 +307,7 @@ const ReportIssue = () => {
                       {formData.department === aiSuggestion.predicted_department ? (
                         <>
                           <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
-                          <h3 className="font-semibold text-gray-100">Auto-Applied: {aiSuggestion.priority_level} Priority Emergency</h3>
+                          <h3 className="font-semibold text-gray-100">AI Suggestion Applied</h3>
                         </>
                       ) : (
                         <>
@@ -388,18 +381,11 @@ const ReportIssue = () => {
                 className="input-field"
               >
                 <option value="">Let AI decide automatically</option>
-                <option value="Roads & Infrastructure">Roads & Infrastructure</option>
-                <option value="Hospital Emergency">Hospital Emergency</option>
-                <option value="Water Supply">Water Supply</option>
-                <option value="Street Lighting & Electricity">Street Lighting & Electricity</option>
-                <option value="Sanitation & Waste">Sanitation & Waste</option>
-                <option value="Drainage & Sewage">Drainage & Sewage</option>
-                <option value="Environment & Parks">Environment & Parks</option>
-                <option value="Construction & Public Safety">Construction & Public Safety</option>
-                <option value="Public Property Damage">Public Property Damage</option>
-                <option value="Animal Control">Animal Control</option>
-                <option value="Traffic Management">Traffic Management</option>
-                <option value="Other Civic Issue">Other Civic Issue</option>
+                <option value="Road Service Department">Road Service Department</option>
+                <option value="Hospital Emergency Department">Hospital Emergency Department</option>
+                <option value="Water Management Department">Water Management Department</option>
+                <option value="Electrical Service Department">Electrical Service Department</option>
+                <option value="General Department">General Department</option>
               </select>
               <p className="text-sm text-gray-400 mt-1">
                 💡 You can override the AI suggestion or let it decide automatically

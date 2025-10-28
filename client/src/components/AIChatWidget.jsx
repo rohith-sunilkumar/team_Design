@@ -179,9 +179,9 @@ const AIChatWidget = () => {
                       message.role === 'user'
                         ? 'bg-violet-600 text-white'
                         : 'bg-slate-700 text-gray-100'
-                    }`}
+                    } overflow-hidden`}
                   >
-                    <p className="text-base whitespace-pre-wrap break-words">
+                    <p className="text-base whitespace-pre-wrap break-words overflow-wrap-anywhere">
                       {message.content.split('\n').map((line, i) => (
                         <React.Fragment key={i}>
                           {renderMarkdown(line)}

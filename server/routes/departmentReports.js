@@ -4,6 +4,8 @@ import { protect, authorize } from '../middleware/auth.js';
 import { upload } from '../config/cloudinary.js';
 import { classifyComplaint } from '../services/aiClassifier.js';
 import { getDepartmentModel, getAllDepartmentModels } from '../models/DepartmentReport.js';
+import aiModelService from '../services/aiModelService.js';
+import path from 'path';
 
 const router = express.Router();
 
@@ -57,6 +59,7 @@ router.post('/', protect, upload.array('images', 5), [
     // Determine classification
     let aiResult;
     if (userSelectedCategory && CATEGORY_TO_DEPT[userSelectedCategory]) {
+      // User manually selected category - don't override
       aiResult = {
         category: userSelectedCategory,
         priority: 'medium',
@@ -64,7 +67,70 @@ router.post('/', protect, upload.array('images', 5), [
         confidence: 1.0,
         reasoning: 'User-selected category'
       };
+      console.log('👤 User manually selected category:', userSelectedCategory);
+    } else if (imagePaths.length > 0) {
+      // User uploaded images but didn't select category - use trained AI model
+      console.log('🖼️  Attempting AI image classification with trained model...');
+      try {
+        const isModelAvailable = await aiModelService.isModelAvailable();
+        
+        if (isModelAvailable) {
+          // Use the first image for classification
+          const firstImagePath = path.join(process.cwd(), 'uploads', imagePaths[0]);
+          const modelPrediction = await aiModelService.predictImage(firstImagePath);
+          
+          if (modelPrediction.success) {
+            console.log('✅ Trained AI model prediction:', modelPrediction);
+            
+            // Map trained model categories to our department system
+            const categoryMapping = {
+              'Pothole Issues': 'Road Service Department',
+              'Damaged Road issues': 'Road Service Department',
+              'Broken Road Sign Issues': 'Road Service Department',
+              'Illegal Parking Issues': 'Road Service Department',
+              'Littering Garbage on Public Places Issues': 'General Department',
+              'Vandalism Issues': 'General Department',
+              'Mixed Issues': 'Road Service Department'
+            };
+            
+            const mappedCategory = categoryMapping[modelPrediction.category] || 'General Department';
+            const mappedDept = CATEGORY_TO_DEPT[mappedCategory] || 'general';
+            
+            // Determine priority based on confidence
+            let priority = 'medium';
+            if (modelPrediction.confidence >= 0.85) {
+              priority = 'high';
+            } else if (modelPrediction.confidence < 0.6) {
+              priority = 'low';
+            }
+            
+            aiResult = {
+              category: mappedCategory,
+              priority: priority,
+              department: mappedDept,
+              confidence: modelPrediction.confidence,
+              reasoning: `Trained AI model detected: ${modelPrediction.category} (${(modelPrediction.confidence * 100).toFixed(1)}% confidence)`
+            };
+            
+            console.log('🎯 Using trained AI model classification:', aiResult);
+          } else {
+            // Model prediction failed, fallback to text+image classification
+            console.log('⚠️  Model prediction failed, using fallback classification');
+            aiResult = await classifyComplaint(title, description, imagePaths);
+          }
+        } else {
+          // Model not trained yet, use existing classification
+          console.log('⚠️  Trained model not available, using existing classification');
+          aiResult = await classifyComplaint(title, description, imagePaths);
+        }
+      } catch (error) {
+        console.error('❌ Error with trained AI model:', error.message);
+        console.log('⚠️  Falling back to existing classification');
+        aiResult = await classifyComplaint(title, description, imagePaths);
+      }
     } else {
+      // No images and no manual selection - use text-based classification
+      console.log('📝 Using text-based classification');
       aiResult = await classifyComplaint(title, description, imagePaths);
     }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import { reportAPI, statsAPI } from '../utils/api';
 import {
@@ -11,11 +12,12 @@ import {
   Filter,
   Eye,
   Edit,
-  MessageCircle
+  AlertCircle
 } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const AdminDashboard = () => {
+  const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -106,13 +108,15 @@ const AdminDashboard = () => {
             <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
             <p className="text-gray-300 mt-1">Manage and monitor civic issue reports</p>
           </div>
-          <Link
-            to="/chat"
-            className="btn-primary flex items-center space-x-2 hover:scale-105 transition-transform duration-300"
-          >
-            <MessageCircle className="h-5 w-5" />
-            <span>Department Chats</span>
-          </Link>
+          {user?.role === 'mayor' && (
+            <Link
+              to="/mayor-alert"
+              className="btn-primary flex items-center space-x-2 hover:scale-105 transition-transform duration-300"
+            >
+              <AlertCircle className="h-5 w-5" />
+              <span>Mayor Alert</span>
+            </Link>
+          )}
         </div>
 
         {/* View Toggle */}

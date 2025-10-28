@@ -11,3 +11,8 @@ uploads/
 *.swp
 *.swo
 *~
+node_modules/
+client/dist/
+server/uploads/
+server/datasets/
+.env

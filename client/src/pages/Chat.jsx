@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
 import { MessageCircle, Send, X, Clock, CheckCircle, Trash2 } from 'lucide-react';
@@ -10,6 +11,7 @@ const API_URL = BASE_URL;
 
 const Chat = () => {
   const { user, token, isAuthenticated } = useAuth();
+  const { socket, connected } = useSocket();
   const navigate = useNavigate();
   
   const [chats, setChats] = useState([]);
@@ -20,8 +22,10 @@ const Chat = () => {
   const [showNewChat, setShowNewChat] = useState(false);
   const [newChatDept, setNewChatDept] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [typingUser, setTypingUser] = useState(null);
   
   const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -33,7 +37,7 @@ const Chat = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [selectedChat]);
+  }, [selectedChat?.messages]);
 
   // Update current time every second to hide delete buttons after 2 minutes
   useEffect(() => {
@@ -43,6 +47,57 @@ const Chat = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Socket.IO: Join/leave chat room when selectedChat changes
+  useEffect(() => {
+    if (!socket || !connected || !selectedChat) return;
+
+    console.log('🔌 Setting up socket listeners for chat:', selectedChat._id);
+
+    // Join chat room
+    socket.emit('join_chat', selectedChat._id);
+
+    // Listen for successful join
+    socket.on('joined_chat', (data) => {
+      console.log('✅ Successfully joined chat room:', data);
+    });
+
+    // Listen for new messages
+    socket.on('chat_message_received', (data) => {
+      console.log('📨 New message received:', data);
+      if (data.chatId === selectedChat._id) {
+        // Refresh chat to get the new message
+        selectChat(selectedChat, true); // true = skip socket emit
+      }
+    });
+
+    // Listen for typing indicators
+    socket.on('user_chat_typing', (data) => {
+      if (data.chatId === selectedChat._id && data.userId !== user._id) {
+        setTypingUser(data.userName);
+      }
+    });
+
+    socket.on('user_chat_stop_typing', (data) => {
+      if (data.chatId === selectedChat._id) {
+        setTypingUser(null);
+      }
+    });
+
+    // Listen for socket errors
+    socket.on('error', (error) => {
+      console.error('🔴 Socket error:', error);
+    });
+
+    return () => {
+      socket.emit('leave_chat', selectedChat._id);
+      socket.off('joined_chat');
+      socket.off('chat_message_received');
+      socket.off('user_chat_typing');
+      socket.off('user_chat_stop_typing');
+      socket.off('error');
+    };
+  }, [socket, connected, selectedChat, user]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -66,7 +121,7 @@ const Chat = () => {
     }
   };
 
-  const selectChat = async (chat) => {
+  const selectChat = async (chat, skipSocketEmit = false) => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.get(`${API_URL}/api/chat/${chat._id}`, { headers });
@@ -74,6 +129,21 @@ const Chat = () => {
     } catch (error) {
       console.error('Error fetching chat:', error);
     }
+  };
+
+  // Handle typing indicator
+  const handleTyping = () => {
+    if (!socket || !connected || !selectedChat) return;
+
+    socket.emit('chat_typing', { chatId: selectedChat._id });
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit('chat_stop_typing', { chatId: selectedChat._id });
+    }, 1000);
   };
 
   const startNewChat = async () => {
@@ -119,6 +189,13 @@ const Chat = () => {
       );
       
       setMessage('');
+      
+      // Stop typing indicator
+      if (socket && connected) {
+        socket.emit('chat_stop_typing', { chatId: selectedChat._id });
+      }
+      
+      // Refresh chat to show new message (Socket.IO will also trigger this)
       await selectChat(selectedChat);
       setTimeout(scrollToBottom, 100);
     } catch (error) {
@@ -186,9 +263,17 @@ const Chat = () => {
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold gradient-text">
-            {(user.role === 'admin' || user.role === 'mayor') ? 'Department Chats' : 'My Chats'}
-          </h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold gradient-text">
+              {(user.role === 'admin' || user.role === 'mayor') ? 'Department Chats' : 'My Chats'}
+            </h1>
+            {connected && (
+              <span className="px-3 py-1 bg-green-500/20 text-green-400 text-sm font-semibold rounded-full border border-green-500/30 flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                Live
+              </span>
+            )}
+          </div>
           {(user.role === 'citizen' || user.role === 'admin' || user.role === 'mayor') && (
             <button
               onClick={() => setShowNewChat(true)}
@@ -275,32 +360,43 @@ const Chat = () => {
                   ) : (
                     selectedChat.messages.map((msg, index) => {
                       const isOwn = msg.senderId === user._id;
+                      // Align based on role: mayor/admin on right, citizen on left
+                      const isMayorOrAdmin = msg.senderRole === 'mayor' || msg.senderRole === 'admin';
+                      const alignRight = isMayorOrAdmin;
+                      
                       // Check if message is within 2 minutes
                       const messageTime = new Date(msg.timestamp);
                       const currentTime = new Date();
                       const timeDifferenceInMinutes = (currentTime - messageTime) / (1000 * 60);
                       const canDelete = isOwn && timeDifferenceInMinutes <= 2;
                       
+                      // Role-based colors
+                      let bgColor = 'bg-slate-700 text-gray-100'; // Default for citizen
+                      if (msg.senderRole === 'mayor') {
+                        bgColor = 'bg-gradient-to-r from-purple-600 to-pink-600 text-white';
+                      } else if (msg.senderRole === 'admin') {
+                        bgColor = 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white';
+                      }
+                      
                       return (
                         <div
                           key={index}
-                          className={`flex ${isOwn ? 'justify-end' : 'justify-start'} group`}
+                          className={`flex ${alignRight ? 'justify-end' : 'justify-start'} group`}
                         >
-                          <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'} relative`}>
+                          <div className={`max-w-[70%] relative`}>
                             <div
-                              className={`rounded-lg px-4 py-2 relative ${
-                                isOwn
-                                  ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white'
-                                  : 'bg-slate-700 text-gray-100'
-                              }`}
+                              className={`rounded-lg px-4 py-2 relative ${bgColor}`}
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1">
-                                  <p className="text-xs font-semibold mb-1 opacity-75">
-                                    {msg.senderName} ({msg.senderRole})
+                                  <p className="text-xs font-semibold mb-1 opacity-90">
+                                    {msg.senderName} 
+                                    {msg.senderRole === 'mayor' && ' 👑'}
+                                    {msg.senderRole === 'admin' && ' 🛡️'}
+                                    <span className="ml-1 opacity-75">({msg.senderRole})</span>
                                   </p>
-                                  <p className="text-sm">{msg.message}</p>
-                                  <p className={`text-xs mt-1 ${isOwn ? 'text-violet-100' : 'text-gray-400'}`}>
+                                  <p className="text-sm break-words">{msg.message}</p>
+                                  <p className={`text-xs mt-1 opacity-75`}>
                                     {new Date(msg.timestamp).toLocaleTimeString()}
                                   </p>
                                 </div>
@@ -320,6 +416,13 @@ const Chat = () => {
                       );
                     })
                   )}
+                  {typingUser && (
+                    <div className="flex justify-start">
+                      <div className="bg-slate-700/50 rounded-lg px-4 py-2 max-w-[70%]">
+                        <p className="text-sm text-gray-300 italic">{typingUser} is typing...</p>
+                      </div>
+                    </div>
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
 
@@ -328,7 +431,10 @@ const Chat = () => {
                   <input
                     type="text"
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
+                    onChange={(e) => {
+                      setMessage(e.target.value);
+                      handleTyping();
+                    }}
                     placeholder="Type your message..."
                     className="input-field"
                     disabled={sending}

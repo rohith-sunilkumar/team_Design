@@ -295,6 +295,57 @@ export const initializeSocket = (server) => {
       });
     });
 
+    // ==================== DEPARTMENT CHAT EVENTS ====================
+    
+    // Join chat room
+    socket.on('join_chat', async (chatId) => {
+      try {
+        socket.join(`chat_${chatId}`);
+        console.log(`💬 ${socket.user.name} joined chat room: ${chatId}`);
+        socket.emit('joined_chat', { chatId, message: 'Successfully joined chat room' });
+      } catch (error) {
+        console.error('Join chat error:', error);
+        socket.emit('error', { message: 'Failed to join chat room' });
+      }
+    });
+
+    // Leave chat room
+    socket.on('leave_chat', (chatId) => {
+      socket.leave(`chat_${chatId}`);
+      console.log(`📤 ${socket.user.name} left chat room: ${chatId}`);
+    });
+
+    // Chat typing indicator
+    socket.on('chat_typing', (data) => {
+      const { chatId } = data;
+      socket.to(`chat_${chatId}`).emit('user_chat_typing', {
+        userId: socket.user._id,
+        userName: socket.user.name,
+        userRole: socket.user.role,
+        chatId
+      });
+    });
+
+    socket.on('chat_stop_typing', (data) => {
+      const { chatId } = data;
+      socket.to(`chat_${chatId}`).emit('user_chat_stop_typing', {
+        userId: socket.user._id,
+        chatId
+      });
+    });
+
+    // Broadcast new message to chat room
+    socket.on('new_chat_message', (data) => {
+      const { chatId, message } = data;
+      // Broadcast to all users in the chat room including sender
+      io.to(`chat_${chatId}`).emit('chat_message_received', {
+        chatId,
+        message,
+        timestamp: new Date()
+      });
+      console.log(`💬 Message broadcast in chat ${chatId} by ${socket.user.name}`);
+    });
+
     socket.on('disconnect', () => {
       console.log(`❌ User disconnected: ${socket.user.name}`);
     });

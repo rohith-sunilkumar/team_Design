@@ -246,42 +246,56 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
           ) : (
             messages.map((msg) => {
               const isOwnMessage = msg.sender._id === user._id;
+              // Align based on role: mayor/admin on right, citizen on left
+              const isMayorOrAdmin = msg.senderRole === 'mayor' || msg.senderRole === 'admin';
+              const alignRight = isMayorOrAdmin;
+              
+              // Role-based colors
+              let bgColor = 'bg-white border-2 border-gray-200 text-gray-900'; // Default for citizen
+              let textColor = 'text-gray-900';
+              let nameColor = 'text-gray-800';
+              let timeColor = 'text-gray-600';
+              let linkColor = 'text-blue-600 hover:text-blue-800';
+              
+              if (msg.senderRole === 'mayor') {
+                bgColor = 'bg-gradient-to-br from-purple-600 to-pink-600 text-white';
+                textColor = 'text-white';
+                nameColor = 'text-white';
+                timeColor = 'text-purple-100';
+                linkColor = 'text-purple-100 hover:text-white';
+              } else if (msg.senderRole === 'admin') {
+                bgColor = 'bg-gradient-to-br from-blue-600 to-cyan-600 text-white';
+                textColor = 'text-white';
+                nameColor = 'text-white';
+                timeColor = 'text-blue-100';
+                linkColor = 'text-blue-100 hover:text-white';
+              }
+              
               return (
                 <div
                   key={msg._id}
-                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${alignRight ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div
-                    className={`max-w-[70%] rounded-xl p-3.5 shadow-md ${
-                      isOwnMessage
-                        ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white'
-                        : 'bg-white border-2 border-gray-200 text-gray-900'
-                    }`}
-                  >
+                  <div className={`max-w-[70%] rounded-xl p-3.5 shadow-md ${bgColor}`}>
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className={`text-xs font-bold ${
-                        isOwnMessage ? 'text-white' : 'text-gray-800'
-                      }`}>
+                      <span className={`text-xs font-bold ${nameColor}`}>
                         {msg.sender.name}
                       </span>
-                      {msg.senderRole === 'admin' && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                          isOwnMessage ? 'bg-blue-800 text-white' : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          Admin
-                        </span>
-                      )}
                       {msg.senderRole === 'mayor' && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                          isOwnMessage ? 'bg-purple-800 text-white' : 'bg-purple-100 text-purple-800'
-                        }`}>
-                          Mayor
-                        </span>
+                        <span className="text-xs">👑</span>
                       )}
+                      {msg.senderRole === 'admin' && (
+                        <span className="text-xs">🛡️</span>
+                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                        msg.senderRole === 'mayor' ? 'bg-purple-800 text-white' :
+                        msg.senderRole === 'admin' ? 'bg-blue-800 text-white' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {msg.senderRole === 'mayor' ? 'Mayor' : msg.senderRole === 'admin' ? 'Admin' : 'Citizen'}
+                      </span>
                     </div>
-                    <p className={`text-sm break-words leading-relaxed ${
-                      isOwnMessage ? 'text-white' : 'text-gray-900'
-                    }`}>
+                    <p className={`text-sm break-words leading-relaxed ${textColor}`}>
                       {msg.message}
                     </p>
                     {msg.attachments && msg.attachments.length > 0 && (
@@ -292,18 +306,14 @@ const FeedbackChat = ({ reportId, isOpen, onClose }) => {
                             href={att.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`text-xs underline block font-medium ${
-                              isOwnMessage ? 'text-blue-100 hover:text-white' : 'text-blue-600 hover:text-blue-800'
-                            }`}
+                            className={`text-xs underline block font-medium ${linkColor}`}
                           >
                             📎 Attachment {idx + 1}
                           </a>
                         ))}
                       </div>
                     )}
-                    <span className={`text-xs mt-1.5 block font-medium ${
-                      isOwnMessage ? 'text-blue-100' : 'text-gray-600'
-                    }`}>
+                    <span className={`text-xs mt-1.5 block font-medium ${timeColor}`}>
                       {formatTime(msg.createdAt)}
                     </span>
                   </div>

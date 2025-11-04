@@ -1,6 +1,7 @@
 import express from 'express';
-import Chat from '../models/Chat.js';
 import { protect } from '../middleware/auth.js';
+import Chat from '../models/Chat.js';
+import { getIO } from '../config/socket.js';
 
 const router = express.Router();
 
@@ -126,6 +127,20 @@ router.post('/:chatId/message', protect, async (req, res) => {
     }
 
     await chat.save();
+
+    // Emit real-time message to all users in the chat room
+    try {
+      const io = getIO();
+      io.to(`chat_${chatId}`).emit('chat_message_received', {
+        chatId,
+        message: newMessage,
+        timestamp: new Date()
+      });
+      console.log(`🔔 Real-time message broadcast to chat_${chatId}`);
+    } catch (error) {
+      console.error('Socket.IO broadcast error:', error.message);
+      // Continue even if socket broadcast fails
+    }
 
     res.json({
       success: true,

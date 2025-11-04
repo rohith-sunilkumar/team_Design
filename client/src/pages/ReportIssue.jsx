@@ -4,8 +4,9 @@ import Navbar from '../components/Navbar';
 import { reportAPI } from '../utils/api';
 import { Upload, MapPin, AlertCircle, CheckCircle, Sparkles, X, Building2 } from 'lucide-react';
 import axios from 'axios';
+import { BASE_URL } from '../utils/api';
 
-const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
+const API_URL = BASE_URL;
 
 const ReportIssue = () => {
   const [formData, setFormData] = useState({

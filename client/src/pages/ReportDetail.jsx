@@ -5,8 +5,9 @@ import FeedbackChat from '../components/FeedbackChat';
 import { reportAPI, getImageUrl } from '../utils/api';
 import axios from 'axios';
 import { ArrowLeft, MapPin, Calendar, User, Sparkles, AlertCircle, MessageCircle, Star, X } from 'lucide-react';
+import { BASE_URL } from '../utils/api';
 
-const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
+const API_URL = BASE_URL;
 
 const ReportDetail = () => {
   const { id } = useParams();

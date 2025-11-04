@@ -4,8 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
 import { AlertCircle, Send, Crown, Clock, User, MessageSquare } from 'lucide-react';
+import { BASE_URL } from '../utils/api';
 
-const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
+const API_URL = BASE_URL;
 
 const MayorAlert = () => {
   const { user, token, isAuthenticated } = useAuth();

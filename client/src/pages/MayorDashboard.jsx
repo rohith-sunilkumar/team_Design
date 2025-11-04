@@ -8,8 +8,9 @@ import {
   Crown, Users, CheckCircle, Clock, XCircle, 
   Shield, AlertCircle, Trash2, UserCheck, FileText, Filter, Edit, Eye, MessageCircle
 } from 'lucide-react';
+import { BASE_URL } from '../utils/api';
 
-const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
+const API_URL = BASE_URL; // Use centralized API configuration
 
 const MayorDashboard = () => {
   const { user, token, isAuthenticated } = useAuth();

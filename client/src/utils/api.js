@@ -1,7 +1,11 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002/api';
-const BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5002';
+// API Configuration - works in both local and production environments
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+
+// Export for use in other components
+export { API_URL, BASE_URL };
 
 // Helper function to get full image URL
 export const getImageUrl = (imagePath) => {

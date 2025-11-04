@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, User, LayoutDashboard, FileText, Users, Home, MessageCircle, Lock, Menu, X, Bell, UserCheck, AlertCircle, Star, ThumbsDown, CheckCircle, PlusCircle, AlertTriangle } from 'lucide-react';
 import logo from '../assets/logo.svg';
-import { notificationAPI } from '../utils/api';
+import { notificationAPI, BASE_URL } from '../utils/api';
 
-const API_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
+const API_URL = BASE_URL; // Use centralized API configuration
 
 const Navbar = () => {
   const { user, logout, isAuthenticated, isAdmin, token } = useAuth();
@@ -17,6 +17,8 @@ const Navbar = () => {
     total: 0,
     items: []
   });
+  const [showAlertModal, setShowAlertModal] = React.useState(false);
+  const [activeAlert, setActiveAlert] = React.useState(null);
 
   // Fetch notifications for all user types
   React.useEffect(() => {
@@ -214,11 +216,18 @@ const Navbar = () => {
                             notifications.items.map((notification, index) => {
                               const IconComponent = getIconComponent(notification.icon);
                               return (
-                                <Link
+                                <button
                                   key={notification.id || index}
-                                  to={notification.link}
-                                  onClick={() => setShowNotifications(false)}
-                                  className="flex items-start space-x-3 p-3 hover:bg-violet-600/20 rounded-lg transition-all group"
+                                  onClick={() => {
+                                    if (notification.title === 'Mayor Alert' && notification.details) {
+                                      setActiveAlert(notification.details);
+                                      setShowAlertModal(true);
+                                      return;
+                                    }
+                                    setShowNotifications(false);
+                                    navigate(notification.link);
+                                  }}
+                                  className="w-full text-left flex items-start space-x-3 p-3 hover:bg-violet-600/20 rounded-lg transition-all group"
                                 >
                                   <div className={`p-2 rounded-lg ${getIconBgClass(notification.type)}`}>
                                     <IconComponent className={`h-5 w-5 ${getIconColorClass(notification.type)}`} />
@@ -241,7 +250,7 @@ const Navbar = () => {
                                       {notification.count}
                                     </span>
                                   )}
-                                </Link>
+                                </button>
                               );
                             })
                           ) : (
@@ -264,7 +273,6 @@ const Navbar = () => {
                       </div>
                     )}
                   </div>
-                )}
                 
                 <div className="relative pl-4 border-l border-violet-500/30">
                   <button
@@ -570,9 +578,40 @@ const Navbar = () => {
             </div>
           </div>
         )}
+
+        {showAlertModal && activeAlert && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4" onClick={() => setShowAlertModal(false)}>
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-violet-500/30 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="p-5 border-b border-violet-500/20 bg-gradient-to-r from-red-600/20 to-orange-600/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <AlertCircle className="h-5 w-5 text-red-400" />
+                    <h3 className="text-lg font-bold text-gray-100">{activeAlert.title || 'Mayor Alert'}</h3>
+                  </div>
+                  <button onClick={() => setShowAlertModal(false)} className="text-gray-400 hover:text-gray-200">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-5">
+                <p className="text-gray-200 whitespace-pre-wrap">
+                  {activeAlert.body}
+                </p>
+              </div>
+              <div className="p-4 bg-slate-800/50 border-t border-violet-500/20 text-right">
+                <button onClick={() => setShowAlertModal(false)} className="btn-primary px-4 py-2">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );
 };
 
 export default Navbar;
+ 
+// Inline lightweight modal for Mayor Alert content
+// Rendered conditionally inside Navbar component return above

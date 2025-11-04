@@ -575,14 +575,20 @@ const AdminReports = () => {
 
                 {/* Edit Form */}
                 {editingReport === report._id && (
-                  <div className="border-t border-gray-200 bg-blue-50 p-6">
-                    <h4 className="font-semibold text-gray-800 mb-4 flex items-center">
-                      <Edit className="h-5 w-5 mr-2" />
-                      Update Report Details
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <div className="card p-6 animate-fade-in mt-4">
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center space-x-2">
+                        <Edit className="h-5 w-5 text-violet-400" />
+                        <h4 className="text-xl font-bold gradient-text">Update Report Details</h4>
+                      </div>
+                      <span className="px-3 py-1 text-xs rounded-full bg-violet-600/20 border border-violet-500/30 text-violet-300">
+                        {`ID: ${(report._id || '').slice(-6)}`}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-gray-200">Status</label>
                         <select
                           value={editForm.status}
                           onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
@@ -595,8 +601,8 @@ const AdminReports = () => {
                         </select>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-gray-2 00">Priority</label>
                         <select
                           value={editForm.priority}
                           onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
@@ -608,8 +614,8 @@ const AdminReports = () => {
                         </select>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-gray-200">Category</label>
                         <select
                           value={editForm.category}
                           onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
@@ -624,8 +630,8 @@ const AdminReports = () => {
                         </select>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Assigned Department</label>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-gray-200">Assigned Department</label>
                         <select
                           value={editForm.assignedDepartment}
                           onChange={(e) => setEditForm({ ...editForm, assignedDepartment: e.target.value })}
@@ -640,15 +646,16 @@ const AdminReports = () => {
                         </select>
                       </div>
 
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Admin Notes</label>
+                      <div className="md:col-span-2 space-y-2">
+                        <label className="block text-sm font-semibold text-gray-200">Admin Notes</label>
                         <textarea
                           value={editForm.adminNotes}
                           onChange={(e) => setEditForm({ ...editForm, adminNotes: e.target.value })}
-                          rows="3"
-                          placeholder="Add notes about this report..."
+                          rows="4"
+                          placeholder="Add helpful notes for citizens and internal staff..."
                           className="input-field"
                         />
+                        <p className="text-xs text-gray-400">Notes are visible to relevant staff and may be shared with the reporter.</p>
                       </div>
                     </div>
                   </div>

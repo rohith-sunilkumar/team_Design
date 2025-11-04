@@ -125,7 +125,11 @@ router.get('/', auth, async (req, res) => {
           count: 1,
           link: '/dashboard',
           icon: 'AlertCircle',
-          timestamp: alert.createdAt
+          timestamp: alert.createdAt,
+          details: {
+            title: alert.title,
+            body: alert.message
+          }
         });
       });
 
@@ -222,7 +226,11 @@ router.get('/', auth, async (req, res) => {
           count: 1,
           link: '/admin/dashboard',
           icon: 'AlertCircle',
-          timestamp: alert.createdAt
+          timestamp: alert.createdAt,
+          details: {
+            title: alert.title,
+            body: alert.message
+          }
         });
       });
 

@@ -351,7 +351,7 @@ const Chat = () => {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+                <div className="flex-1 overflow-y-auto mb-4 space-y-4 max-h-[calc(100vh-400px)] min-h-[300px]">
                   {selectedChat.messages.length === 0 ? (
                     <div className="text-center py-12">
                       <MessageCircle className="h-16 w-16 text-gray-500 mx-auto mb-4" />

@@ -10,21 +10,9 @@ export default defineConfig({
         target: 'http://localhost:5002',
         changeOrigin: true
       }
-    },
-    // Handle client-side routing - serve index.html for all routes
-    historyApiFallback: {
-      rewrites: [
-        { from: /^\/(?!api).*$/, to: '/index.html' }
-      ]
     }
   },
   preview: {
-    port: 3000,
-    // Handle client-side routing in preview mode
-    historyApiFallback: {
-      rewrites: [
-        { from: /^\/(?!api).*$/, to: '/index.html' }
-      ]
-    }
+    port: 3000
   }
 })

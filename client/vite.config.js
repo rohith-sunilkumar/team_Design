@@ -12,11 +12,19 @@ export default defineConfig({
       }
     },
     // Handle client-side routing - serve index.html for all routes
-    historyApiFallback: true
+    historyApiFallback: {
+      rewrites: [
+        { from: /^\/(?!api).*$/, to: '/index.html' }
+      ]
+    }
   },
   preview: {
     port: 3000,
     // Handle client-side routing in preview mode
-    historyApiFallback: true
+    historyApiFallback: {
+      rewrites: [
+        { from: /^\/(?!api).*$/, to: '/index.html' }
+      ]
+    }
   }
 })
